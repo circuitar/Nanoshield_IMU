@@ -4,8 +4,10 @@
 #include <Wire.h>
 
 // I2C Addresses
-#define LSM303D_ACCEL_ADDRESS   (0x18)
+#define LSM303D_ACCEL_ADDRESS   (0x1C)
 #define LSM303D_MAGNET_ADDRESS  (0x1E)
+#define LSM303D_I2C_0           (0x02)
+#define LSM303D_I2C_1           (0x01)
 
 // Registers Addresses
 #define LSM303D_TEMP_OUT_L      (0x05)
@@ -169,7 +171,7 @@ public:
    * 
    * @param addr I2C address selected on hardware.
    */
-  Nanoshield_IMU(int);
+  Nanoshield_IMU(int addr = LSM303D_I2C_1);
 
   /**
    * @brief Initializes the communication with Nanoshield_IMU.
@@ -203,7 +205,7 @@ public:
    * @param reg Register address.
    * @param value Value to write.
    */
-  void writeToAccelerometerRegister(int reg, int value);
+  void writeToAccelerometerRegister(int8_t reg, int8_t value);
 
   /**
    * @brief Reads 16bits from any accelerometer register.
@@ -211,9 +213,9 @@ public:
    * @param reg Register to read.
    * @return 16bits value read.
    */
-  int16_t readFromAccelerometerRegister(int reg);
+  int16_t readFromAccelerometerRegister(int8_t reg);
+  int8_t accelAddress;
 protected:
-  int8_t accellAddress;
 
   int8_t regCtrl0;
   int8_t regCtrl1;
@@ -227,7 +229,9 @@ protected:
   int i2cError;
   int8_t actualScale;
   bool hasBegun;
-}
+
+  void writeIfHasBegun(int8_t reg, int8_t value);
+};
 
 
 #endif

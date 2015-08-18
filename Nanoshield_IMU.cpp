@@ -2,8 +2,10 @@
 
 #define INT16_T_TOP (32767.0)
 
-Nanoshield_IMU::Nanoshield_IMU(int addr = 0) {
-  accelAddress = LSM303D_ACCEL_ADDRESS & addr == 1 ? 1 : 0;
+Nanoshield_IMU::Nanoshield_IMU(int addr) {
+  accelAddress = LSM303D_ACCEL_ADDRESS;
+  accelAddress |= addr;
+
   hasBegun = false;
   actualScale = 2;
 
@@ -42,15 +44,15 @@ float Nanoshield_IMU::readAccelX() {
 }
 
 float Nanoshield_IMU::readAccelY() {
-  int16_t xAccel = readFromAccelerometerRegister(LSM303D_OUT_Y_H_A) << 8;
-  xAccel |= readFromAccelerometerRegister(LSM303D_OUT_Y_L_A);
-  return (float) xAccel * actualScale / INT16_T_TOP;
+  int16_t yAccel = readFromAccelerometerRegister(LSM303D_OUT_Y_H_A) << 8;
+  yAccel |= readFromAccelerometerRegister(LSM303D_OUT_Y_L_A);
+  return (float) yAccel * actualScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readAccelZ() {
-  int16_t xAccel = readFromAccelerometerRegister(LSM303D_OUT_Z_H_A) << 8;
-  xAccel |= readFromAccelerometerRegister(LSM303D_OUT_Z_L_A);
-  return (float) xAccel * actualScale / INT16_T_TOP;
+  int16_t zAccel = readFromAccelerometerRegister(LSM303D_OUT_Z_H_A) << 8;
+  zAccel |= readFromAccelerometerRegister(LSM303D_OUT_Z_L_A);
+  return (float) zAccel * actualScale / INT16_T_TOP;
 }
 
 void Nanoshield_IMU::writeToAccelerometerRegister(int8_t reg, int8_t value) {
