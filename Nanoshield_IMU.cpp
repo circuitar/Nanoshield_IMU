@@ -37,6 +37,43 @@ void Nanoshield_IMU::setAccelerometerDataRate(int8_t drate) {
   writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
 }
 
+void Nanoshield_IMU::enableAccelXAxis() {
+  regCtrl1 |= LSM303D_AXEN;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+void Nanoshield_IMU::disableAccelXAxis() {
+  regCtrl1 &= ~LSM303D_AXEN;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+void Nanoshield_IMU::enableAccelYAxis() {
+  regCtrl1 |= LSM303D_AYEN;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+void Nanoshield_IMU::disableAccelYAxis() {
+  regCtrl1 &= ~LSM303D_AYEN;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+void Nanoshield_IMU::enableAccelZAxis() {
+  regCtrl1 |= LSM303D_AZEN;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+void Nanoshield_IMU::disableAccelZAxis() {
+  regCtrl1 &= ~LSM303D_AZEN;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+
 void Nanoshield_IMU::begin() {
   Wire.begin();
   writeToAccelerometerRegister(LSM303D_CTRL0, regCtrl0);
@@ -79,7 +116,7 @@ int Nanoshield_IMU::i2cStatus() {
   return i2cError;
 }
 
-inline void Nanoshield_IMU::writeIfHasBegun(int8_t reg, int8_t value) {
+void Nanoshield_IMU::writeIfHasBegun(int8_t reg, int8_t value) {
   if(hasBegun) {
     writeToAccelerometerRegister(reg, value);
   }

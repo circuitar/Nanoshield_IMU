@@ -208,6 +208,51 @@ public:
   void setAccelerometerDataRate(int8_t drate);
 
   /**
+   * @brief Enable the accelerometer X axis.
+   */
+  void enableAccelXAxis();
+
+  /**
+   * @brief Disable the accelerometer X axis.
+   * 
+   * When the axis is disabled, the output register is set to zero.
+   * To enable the axis again use enableAccelXAxis().
+   * 
+   * @see enableAccelXAxis()
+   */
+  void disableAccelXAxis();
+
+  /**
+   * @brief Enable the accelerometer Y axis.
+   */
+  void enableAccelYAxis();
+
+  /**
+   * @brief Disable the accelerometer Y axis.
+   * 
+   * When the axis is disabled, the output register is set to zero.
+   * To enable the axis again use enableAccelYAxis().
+   * 
+   * @see enableAccelYAxis()
+   */
+  void disableAccelYAxis();
+
+  /**
+   * @brief Enable the accelerometer Z axis.
+   */
+  void enableAccelZAxis();
+
+  /**
+   * @brief Disable the accelerometer Z axis.
+   * 
+   * When the axis is disabled, the output register is set to zero.
+   * To enable the axis again use enableAccelZAxis().
+   * 
+   * @see enableAccelZAxis()
+   */
+  void disableAccelZAxis();
+
+  /**
    * @brief Initializes the communication with Nanoshield_IMU.
    */
   void begin();

@@ -2,6 +2,12 @@ Nanoshield_IMU	KEYWORD1
 
 setAccelerometerPowerDown	KEYWORD2
 setAccelerometerDataRate	KEYWORD2
+enableAccelXAxis	KEYWORD2
+disableAccelXAxis	KEYWORD2
+enableAccelYAxis	KEYWORD2
+disableAccelYAxis	KEYWORD2
+enableAccelZAxis	KEYWORD2
+disableAccelZAxis	KEYWORD2
 begin	KEYWORD2
 readAccelX	KEYWORD2
 readAccelY	KEYWORD2

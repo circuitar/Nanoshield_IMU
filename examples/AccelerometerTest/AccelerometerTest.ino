@@ -32,13 +32,13 @@ void loop() {
 
   if(millis() > 10000 and !pwrdown) {
     digitalWrite(13, HIGH);
-    accel.setAccelerometerPowerDown();
+    accel.disableAccelZAxis();
     pwrdown = true;
   }
 
   if(millis() > 20000 and !pwrup) {
     digitalWrite(13, LOW);
-    accel.setAccelerometerDataRate(LSM303D_AODR_1600);
+    accel.enableAccelZAxis();
     pwrup = true;
   }
 }
