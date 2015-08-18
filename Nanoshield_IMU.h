@@ -1,6 +1,7 @@
 #ifndef NANOSHIELD_IMU_H
 #define NANOSHIELD_IMU_H
 
+#include "Arduino.h"
 #include <Wire.h>
 
 // I2C Addresses
@@ -251,6 +252,8 @@ public:
    * @see enableAccelZAxis()
    */
   void disableAccelZAxis();
+
+  bool selfTest(float diff[] = NULL);
 
   /**
    * @brief Initializes the communication with Nanoshield_IMU.

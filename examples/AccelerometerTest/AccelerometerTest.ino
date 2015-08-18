@@ -4,12 +4,26 @@
 Nanoshield_IMU accel;
 bool pwrdown = false;
 bool pwrup = false;
+float selftest[3];
 
 void setup() {
+  pinMode(13, OUTPUT);
   Serial.begin(9600);
   Serial.print("Accelerometer test.\n\n");
+  accel.setAccelerometerDataRate(LSM303D_AODR_50);
   accel.begin();
-  pinMode(13, OUTPUT);
+
+  if(accel.selfTest(selftest)) {
+    digitalWrite(13, HIGH);
+  }
+  
+  Serial.print("selftest x: ");
+  Serial.println(selftest[0]);
+  Serial.print("selftest y: ");
+  Serial.println(selftest[1]);
+  Serial.print("selftest z: ");
+  Serial.println(selftest[2]);
+  Serial.println();
 }
 
 void loop() {
@@ -28,17 +42,5 @@ void loop() {
   Serial.print(a);
   Serial.println("g\n");
 
-  delay(1000);
-
-  if(millis() > 10000 and !pwrdown) {
-    digitalWrite(13, HIGH);
-    accel.disableAccelXAxis();
-    pwrdown = true;
-  }
-
-  if(millis() > 20000 and !pwrup) {
-    digitalWrite(13, LOW);
-    accel.enableAccelXAxis();
-    pwrup = true;
-  }
+  delay(500);
 }

@@ -8,6 +8,7 @@ enableAccelYAxis	KEYWORD2
 disableAccelYAxis	KEYWORD2
 enableAccelZAxis	KEYWORD2
 disableAccelZAxis	KEYWORD2
+selfTest	KEYWORD2
 begin	KEYWORD2
 readAccelX	KEYWORD2
 readAccelY	KEYWORD2
