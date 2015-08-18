@@ -32,13 +32,13 @@ void loop() {
 
   if(millis() > 10000 and !pwrdown) {
     digitalWrite(13, HIGH);
-    accel.disableAccelZAxis();
+    accel.disableAccelYAxis();
     pwrdown = true;
   }
 
   if(millis() > 20000 and !pwrup) {
     digitalWrite(13, LOW);
-    accel.enableAccelZAxis();
+    accel.enableAccelYAxis();
     pwrup = true;
   }
 }
