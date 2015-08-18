@@ -5,8 +5,7 @@
 #include <Wire.h>
 
 // I2C Addresses
-#define LSM303D_ACCEL_ADDRESS   (0x1C)
-#define LSM303D_MAGNET_ADDRESS  (0x1E)
+#define LSM303D_ADDRESS         (0x1C)
 #define LSM303D_I2C_0           (0x02)
 #define LSM303D_I2C_1           (0x01)
 
@@ -14,12 +13,12 @@
 #define LSM303D_TEMP_OUT_L      (0x05)
 #define LSM303D_TEMP_OUT_H      (0x06)
 #define LSM303D_STATUS_M        (0x07)
-#define LSM303D_OUT_X_L_M       (0x08)
-#define LSM303D_OUT_X_H_M       (0x09)
-#define LSM303D_OUT_Y_L_M       (0x0A)
-#define LSM303D_OUT_Y_H_M       (0x0B)
-#define LSM303D_OUT_Z_L_M       (0x0C)
-#define LSM303D_OUT_Z_H_M       (0x0D)
+#define LSM303D_OUT_X_L_M       (0x08)  /// Magnetic X axis output lower address.
+#define LSM303D_OUT_X_H_M       (0x09)  /// Magnetic X axis output higher address.
+#define LSM303D_OUT_Y_L_M       (0x0A)  /// Magnetic Y axis output lower address.
+#define LSM303D_OUT_Y_H_M       (0x0B)  /// Magnetic Y axis output higher address.
+#define LSM303D_OUT_Z_L_M       (0x0C)  /// Magnetic Z axis output lower address.
+#define LSM303D_OUT_Z_H_M       (0x0D)  /// Magnetic Z axis output higher address.
 #define LSM303D_WHO_AM_I        (0x0F)
 #define LSM303D_INT_CTRL_M      (0x12)
 #define LSM303D_INT_SRC_M       (0x13)
@@ -34,21 +33,21 @@
 #define LSM303D_REFERENCE_X     (0x1C)  /// Reference value for high-pass filter for X-axis acceleration data.
 #define LSM303D_REFERENCE_Y     (0x1D)  /// Reference value for high-pass filter for Y-axis acceleration data.
 #define LSM303D_REFERENCE_Z     (0x1E)  /// Reference value for high-pass filter for Z-axis acceleration data.
-#define LSM303D_CTRL0           (0x1F)
-#define LSM303D_CTRL1           (0x20)
-#define LSM303D_CTRL2           (0x21)
-#define LSM303D_CTRL3           (0x22)
-#define LSM303D_CTRL4           (0x23)
-#define LSM303D_CTRL5           (0x24)
-#define LSM303D_CTRL6           (0x25)
-#define LSM303D_CTRL7           (0x26)
+#define LSM303D_CTRL0           (0x1F)  /// Control register 0 address.
+#define LSM303D_CTRL1           (0x20)  /// Control register 1 address.
+#define LSM303D_CTRL2           (0x21)  /// Control register 2 address.
+#define LSM303D_CTRL3           (0x22)  /// Control register 3 address.
+#define LSM303D_CTRL4           (0x23)  /// Control register 4 address.
+#define LSM303D_CTRL5           (0x24)  /// Control register 5 address.
+#define LSM303D_CTRL6           (0x25)  /// Control register 6 address.
+#define LSM303D_CTRL7           (0x26)  /// Control register 7 address.
 #define LSM303D_STATUS_A        (0x27)
-#define LSM303D_OUT_X_L_A       (0x28)
-#define LSM303D_OUT_X_H_A       (0x29)
-#define LSM303D_OUT_Y_L_A       (0x2A)
-#define LSM303D_OUT_Y_H_A       (0x2B)
-#define LSM303D_OUT_Z_L_A       (0x2C)
-#define LSM303D_OUT_Z_H_A       (0x2D)
+#define LSM303D_OUT_X_L_A       (0x28)  /// Magnetic X axis output lower address.
+#define LSM303D_OUT_X_H_A       (0x29)  /// Magnetic X axis output higher address.
+#define LSM303D_OUT_Y_L_A       (0x2A)  /// Magnetic Y axis output lower address.
+#define LSM303D_OUT_Y_H_A       (0x2B)  /// Magnetic Y axis output higher address.
+#define LSM303D_OUT_Z_L_A       (0x2C)  /// Magnetic Z axis output lower address.
+#define LSM303D_OUT_Z_H_A       (0x2D)  /// Magnetic Z axis output higher address.
 #define LSM303D_FIFO_CTRL       (0x2E)
 #define LSM303D_FIFO_SRC        (0x2F)
 #define LSM303D_IG_CFG1         (0x30)
@@ -253,6 +252,33 @@ public:
    */
   void disableAccelZAxis();
 
+  /**
+   * @brief Sets the scale range.
+   * 
+   * Possible values:
+   * - LSM303D_AFS_2G: +/- 2g (0.061 mg/LSB of sensity)
+   * - LSM303D_AFS_4G: +/- 4g (0.122 mg/LSB of sensity)
+   * - LSM303D_AFS_6G: +/- 6g (0.183 mg/LSB of sensity)
+   * - LSM303D_AFS_8G: +/- 8g (0.244 mg/LSB of sensity)
+   * - LSM303D_AFS_16G: +/- 16g (0.732 mg/LSB of sensity)
+   * 
+   * @param scale The scalue to adjust the measure.
+   */
+  void setFullScale(int8_t scale);
+
+  /**
+   * @brief Checks if the sensor is working properly.
+   * 
+   * The LSM303D has a self test feature where an actuation force is applied to
+   * the sensor, simulating a definity input acceleration. The LSM303D datasheet
+   * sets the reference range to the difference between the simulated measure
+   * and the real measure. This test must be done with accelerations applied
+   * to the sensor, except the gravity.
+   * 
+   * @param diff Optional. A three sized float array to store the difference
+   *             measured in X [0], Y [1] and Z [2].
+   * @return True if the test is successful. False if the test fails.
+   */
   bool selfTest(float diff[] = NULL);
 
   /**
@@ -282,12 +308,33 @@ public:
   float readAccelZ();
 
   /**
+   * @brief Gets the last magnetic field measured on X axis.
+   * 
+   * @return The magnetic field in gauss unit.
+   */
+  float readMagnetX();
+
+  /**
+   * @brief Gets the last magnetic field measured on Y axis.
+   * 
+   * @return The magnetic field in gauss unit.
+   */
+  float readMagnetY();
+
+  /**
+   * @brief Gets the last magnetic field measured on Z axis.
+   * 
+   * @return The magnetic field in gauss unit.
+   */
+  float readMagnetZ();
+
+  /**
    * @brief Writes a byte to any accelerometer register.
    * 
    * @param reg Register address.
    * @param value Value to write.
    */
-  void writeToAccelerometerRegister(int8_t reg, int8_t value);
+  void writeToLSM303DRegister(int8_t reg, int8_t value);
 
   /**
    * @brief Reads 16bits from any accelerometer register.
@@ -295,7 +342,7 @@ public:
    * @param reg Register to read.
    * @return 16bits value read.
    */
-  int16_t readFromAccelerometerRegister(int8_t reg);
+  int16_t readFromLSM303DRegister(int8_t reg);
 
   /**
    * @brief Checks the status of the last I2C communication with the Nanoshield.
@@ -305,7 +352,7 @@ public:
   int i2cStatus();
 
 protected:
-  int8_t accelAddress;
+  int8_t lsm303dAddress;
 
   int8_t regCtrl0;
   int8_t regCtrl1;
@@ -317,7 +364,8 @@ protected:
   int8_t regCtrl7;
 
   int i2cError;
-  int8_t actualScale;
+  int8_t accelScale;
+  int8_t magnetScale;
   bool hasBegun;
 
   void writeIfHasBegun(int8_t reg, int8_t value);

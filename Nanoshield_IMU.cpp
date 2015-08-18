@@ -3,11 +3,12 @@
 #define INT16_T_TOP (32767.0)
 
 Nanoshield_IMU::Nanoshield_IMU(int addr) {
-  accelAddress = LSM303D_ACCEL_ADDRESS;
-  accelAddress |= addr;
+  lsm303dAddress = LSM303D_ADDRESS;
+  lsm303dAddress |= addr;
 
   hasBegun = false;
-  actualScale = 2;
+  accelScale = 2;
+  magnetScale = 2;
 
   regCtrl0 = 0;
   regCtrl1 = 0 | LSM303D_AODR_1600  // Accelerometer data rate 1600Hz.
@@ -20,7 +21,7 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   regCtrl3 = 0;
   regCtrl4 = 0;
   regCtrl5 = 0;
-  regCtrl6 = 0;
+  regCtrl6 = 0 | LSM303D_MFS_2GAUSS;  // Magnetic full-scale +/- 2gauss.
   regCtrl7 = 0;
 }
 
@@ -73,11 +74,39 @@ void Nanoshield_IMU::disableAccelZAxis() {
   writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
 }
 
+void Nanoshield_IMU::setFullScale(int8_t scale) {
+  switch(scale) {
+    case LSM303D_AFS_2G:
+      accelScale = 2;
+      break;
+    case LSM303D_AFS_4G:
+      accelScale = 4;
+      break;
+    case LSM303D_AFS_6G:
+      accelScale = 6;
+      break;
+    case LSM303D_AFS_8G:
+      accelScale = 8;
+      break;
+    case LSM303D_AFS_16G:
+      accelScale = 16;
+      break;
+    default:
+      return;
+  }
+
+  regCtrl2 &= ~LSM303D_AFS_MASK;
+  regCtrl2 |= scale;
+
+  writeIfHasBegun(LSM303D_CTRL2, regCtrl2);
+}
+
 bool Nanoshield_IMU::selfTest(float diff[]) {
   register int8_t localRegCtrl2 = regCtrl2;
   register float measurePeriod;
   float measures[6];
 
+  // Calculate the time between two measures.
   switch(regCtrl1 & LSM303D_AODR_MASK) {
     case LSM303D_AODR_3_125:
       measurePeriod = 1000.0 / 3.125;
@@ -112,38 +141,48 @@ bool Nanoshield_IMU::selfTest(float diff[]) {
     default:
       return false;
   }
-  delay(measurePeriod);
 
+  // Sets full scale to +/- 2g,
+  // sets the self test flag
+  // and wait next measure to be ready.
   localRegCtrl2 &= ~LSM303D_AFS_MASK;
-  localRegCtrl2 |= LSM303D_AFS_2G;  // Sets to operate in +/- 2g.
+  localRegCtrl2 |= LSM303D_AFS_2G; 
   localRegCtrl2 |= LSM303D_AST;
-  writeToAccelerometerRegister(LSM303D_CTRL2, localRegCtrl2);
+  writeToLSM303DRegister(LSM303D_CTRL2, localRegCtrl2);
   delay(measurePeriod);
 
+  // Read the simulated acceleration.
   measures[0] = readAccelX();
   measures[1] = readAccelY();
   measures[2] = readAccelZ();
 
+  // Unset the self test flag
+  // and wait next measure to be ready.
   localRegCtrl2 &= ~LSM303D_AST;
-  writeToAccelerometerRegister(LSM303D_CTRL2, localRegCtrl2);
+  writeToLSM303DRegister(LSM303D_CTRL2, localRegCtrl2);
   delay(measurePeriod);
 
+  // Read the real acceleration.
   measures[3] = readAccelX();
   measures[4] = readAccelY();
   measures[5] = readAccelZ();
 
-  writeToAccelerometerRegister(LSM303D_CTRL2, regCtrl2);
+  // Reset default settings.
+  writeToLSM303DRegister(LSM303D_CTRL2, regCtrl2);
 
+  // Calculate the selftest difference.
   register float xdiff = 1000 * (measures[0] - measures[3]);
   register float ydiff = 1000 * (measures[1] - measures[4]);
   register float zdiff = 1000 * (measures[2] - measures[5]);
 
+  // Output difference
   if(diff != NULL) {
     diff[0] = xdiff;
     diff[1] = ydiff;
     diff[2] = zdiff;
   }
 
+  // Check if the sensor is working properly.
   return (xdiff >= 70
          && xdiff <= 1700
          && ydiff >= 70
@@ -161,37 +200,56 @@ bool Nanoshield_IMU::selfTest(float diff[]) {
 
 void Nanoshield_IMU::begin() {
   Wire.begin();
-  writeToAccelerometerRegister(LSM303D_CTRL0, regCtrl0);
-  writeToAccelerometerRegister(LSM303D_CTRL1, regCtrl1);
-  writeToAccelerometerRegister(LSM303D_CTRL2, regCtrl2);
-  writeToAccelerometerRegister(LSM303D_CTRL3, regCtrl3);
-  writeToAccelerometerRegister(LSM303D_CTRL4, regCtrl4);
-  writeToAccelerometerRegister(LSM303D_CTRL5, regCtrl5);
-  writeToAccelerometerRegister(LSM303D_CTRL6, regCtrl6);
-  writeToAccelerometerRegister(LSM303D_CTRL7, regCtrl7);
+  writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
+  writeToLSM303DRegister(LSM303D_CTRL1, regCtrl1);
+  writeToLSM303DRegister(LSM303D_CTRL2, regCtrl2);
+  writeToLSM303DRegister(LSM303D_CTRL3, regCtrl3);
+  writeToLSM303DRegister(LSM303D_CTRL4, regCtrl4);
+  writeToLSM303DRegister(LSM303D_CTRL5, regCtrl5);
+  writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
+  writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
   hasBegun = true;
 }
 
 float Nanoshield_IMU::readAccelX() {
-  register int16_t xAccel = readFromAccelerometerRegister(LSM303D_OUT_X_H_A) << 8;
-  xAccel |= readFromAccelerometerRegister(LSM303D_OUT_X_L_A);
-  return (float) xAccel * actualScale / INT16_T_TOP;
+  register int16_t xAccel = readFromLSM303DRegister(LSM303D_OUT_X_H_A) << 8;
+  xAccel |= readFromLSM303DRegister(LSM303D_OUT_X_L_A);
+  return (float) xAccel * accelScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readAccelY() {
-  register int16_t yAccel = readFromAccelerometerRegister(LSM303D_OUT_Y_H_A) << 8;
-  yAccel |= readFromAccelerometerRegister(LSM303D_OUT_Y_L_A);
-  return (float) yAccel * actualScale / INT16_T_TOP;
+  register int16_t yAccel = readFromLSM303DRegister(LSM303D_OUT_Y_H_A) << 8;
+  yAccel |= readFromLSM303DRegister(LSM303D_OUT_Y_L_A);
+  return (float) yAccel * accelScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readAccelZ() {
-  register int16_t zAccel = readFromAccelerometerRegister(LSM303D_OUT_Z_H_A) << 8;
-  zAccel |= readFromAccelerometerRegister(LSM303D_OUT_Z_L_A);
-  return (float) zAccel * actualScale / INT16_T_TOP;
+  register int16_t zAccel = readFromLSM303DRegister(LSM303D_OUT_Z_H_A) << 8;
+  zAccel |= readFromLSM303DRegister(LSM303D_OUT_Z_L_A);
+  return (float) zAccel * accelScale / INT16_T_TOP;
 }
 
-void Nanoshield_IMU::writeToAccelerometerRegister(int8_t reg, int8_t value) {
-  Wire.beginTransmission(accelAddress);
+float Nanoshield_IMU::readMagnetX() {
+  register int16_t xMagnet = readFromLSM303DRegister(LSM303D_OUT_X_H_M) << 8;
+  xMagnet |= readFromLSM303DRegister(LSM303D_OUT_X_L_M);
+  return (float) xMagnet * magnetScale / INT16_T_TOP;
+}
+
+float Nanoshield_IMU::readMagnetY() {
+  register int16_t yMagnet = readFromLSM303DRegister(LSM303D_OUT_Y_H_M) << 8;
+  yMagnet |= readFromLSM303DRegister(LSM303D_OUT_Y_L_M);
+  return (float) yMagnet * magnetScale / INT16_T_TOP;
+}
+
+float Nanoshield_IMU::readMagnetZ() {
+  register int16_t zMagnet = readFromLSM303DRegister(LSM303D_OUT_Z_H_M) << 8;
+  zMagnet |= readFromLSM303DRegister(LSM303D_OUT_Z_L_M);
+  return (float) zMagnet * magnetScale / INT16_T_TOP;
+}
+
+
+void Nanoshield_IMU::writeToLSM303DRegister(int8_t reg, int8_t value) {
+  Wire.beginTransmission(lsm303dAddress);
   Wire.write(reg);
   Wire.write(value);
   i2cError = Wire.endTransmission();
@@ -203,15 +261,15 @@ int Nanoshield_IMU::i2cStatus() {
 
 void Nanoshield_IMU::writeIfHasBegun(int8_t reg, int8_t value) {
   if(hasBegun) {
-    writeToAccelerometerRegister(reg, value);
+    writeToLSM303DRegister(reg, value);
   }
 }
 
-int Nanoshield_IMU::readFromAccelerometerRegister(int8_t reg) {
-  Wire.beginTransmission(accelAddress);
+int Nanoshield_IMU::readFromLSM303DRegister(int8_t reg) {
+  Wire.beginTransmission(lsm303dAddress);
   Wire.write(reg);
   Wire.endTransmission();
 
-  Wire.requestFrom(accelAddress, 1);
+  Wire.requestFrom(lsm303dAddress, 1);
   return Wire.read();
 }
