@@ -168,10 +168,44 @@ public:
    * @brief Constructor.
    * 
    * Creates an object to access the Nanoshield IMU.
+   * To nanoshield address use LSM303D_I2C_1 or LSM303D_I2C_0, according to 
+   * ADDR jump.
    * 
    * @param addr I2C address selected on hardware.
    */
   Nanoshield_IMU(int addr = LSM303D_I2C_1);
+
+  /**
+   * @brief Turns off the accelerometer.
+   * 
+   * Note that the last accelerometer measure stays in the registers. In case
+   * of reading any axis, the returned value will be wrong. To turn the 
+   * accelerometer on again, set a data rate to it.
+   * 
+   * @see setAccelerometerDataRate()
+   */
+  void setAccelerometerPowerDown();
+
+  /**
+   * @brief Sets accelerometer data rate.
+   * 
+   * Possible data rates:
+   * - LSM303D_AODR_3_125: 3.125 Hz.
+   * - LSM303D_AODR_6_25: 6.25 Hz.
+   * - LSM303D_AODR_12_5: 12.5 Hz.
+   * - LSM303D_AODR_25: 25 Hz.
+   * - LSM303D_AODR_50: 50 Hz.
+   * - LSM303D_AODR_100: 100 Hz.
+   * - LSM303D_AODR_200: 200 Hz.
+   * - LSM303D_AODR_400: 400 Hz.
+   * - LSM303D_AODR_800: 800 Hz.
+   * - LSM303D_AODR_1600: 1600 Hz.
+   * Note that as greater is the data rate, greater is the power consumption
+   * and as lower is the data rate, lower is the power consumption.
+   * 
+   * @param drate Frequency to refresh accelerometer measures.
+   */
+  void setAccelerometerDataRate(int8_t drate);
 
   /**
    * @brief Initializes the communication with Nanoshield_IMU.
@@ -214,8 +248,16 @@ public:
    * @return 16bits value read.
    */
   int16_t readFromAccelerometerRegister(int8_t reg);
-  int8_t accelAddress;
+
+  /**
+   * @brief Checks the status of the last I2C communication with the Nanoshield.
+   * 
+   * @return The status returned by the last Wire.endTransmission().
+   */
+  int i2cStatus();
+
 protected:
+  int8_t accelAddress;
 
   int8_t regCtrl0;
   int8_t regCtrl1;

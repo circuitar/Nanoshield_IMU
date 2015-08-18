@@ -24,6 +24,19 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   regCtrl7 = 0;
 }
 
+void Nanoshield_IMU::setAccelerometerPowerDown() {
+  regCtrl1 &= ~LSM303D_AODR_MASK;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
+void Nanoshield_IMU::setAccelerometerDataRate(int8_t drate) {
+  regCtrl1 &= ~LSM303D_AODR_MASK;
+  regCtrl1 |= drate;
+
+  writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
+}
+
 void Nanoshield_IMU::begin() {
   Wire.begin();
   writeToAccelerometerRegister(LSM303D_CTRL0, regCtrl0);
@@ -60,6 +73,10 @@ void Nanoshield_IMU::writeToAccelerometerRegister(int8_t reg, int8_t value) {
   Wire.write(reg);
   Wire.write(value);
   i2cError = Wire.endTransmission();
+}
+
+int Nanoshield_IMU::i2cStatus() {
+  return i2cError;
 }
 
 inline void Nanoshield_IMU::writeIfHasBegun(int8_t reg, int8_t value) {
