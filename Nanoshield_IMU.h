@@ -308,6 +308,25 @@ public:
   float readAccelZ();
 
   /**
+   * @brief Sets the magnetometer data rate.
+   * 
+   * Possible data rates:
+   * - LSM303D_M_ODR_3_125: 3.125Hz.
+   * - LSM303D_M_ODR_6_25: 6.25 Hz.
+   * - LSM303D_M_ODR_12_5: 12.5 Hz.
+   * - LSM303D_M_ODR_25: 25 Hz.
+   * - LSM303D_M_ODR_50: 50 Hz.
+   * - LSM303D_M_ODR_100: 100 Hz.
+   * The 100Hz can be used only if accelerometer data rate is greater than 50Hz
+   * or if accelerometer is in power down mode. Note that as greater is the
+   * data rate, greater is the power consumption and as lower is the data rate,
+   * lower is the power consumption.
+   * 
+   * @param drate Frequency to refresh magnetometer measures.
+   */
+  void setMagnetometerDataRate(int8_t drate);
+
+  /**
    * @brief Gets the last magnetic field measured on X axis.
    * 
    * @return The magnetic field in gauss unit.

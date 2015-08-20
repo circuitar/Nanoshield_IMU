@@ -20,7 +20,7 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
                | LSM303D_AFS_2G;    // Accelerometer full-scale +/- 2g.
   regCtrl3 = 0;
   regCtrl4 = 0;
-  regCtrl5 = 0;
+  regCtrl5 = 0 | LSM303D_M_ODR_100;   // Magnetic data rate 100Hz.
   regCtrl6 = 0 | LSM303D_MFS_2GAUSS;  // Magnetic full-scale +/- 2gauss.
   regCtrl7 = 0;
 }
@@ -189,7 +189,7 @@ bool Nanoshield_IMU::selfTest(float diff[]) {
          && ydiff <= 1700
          && zdiff >= 70
          && zdiff <= 1700) ||
-         (xdiff <= -70
+         (xdiff <= -70     // Signal does not matter
          && xdiff >= -1700
          && ydiff <= -70
          && ydiff >= -1700
@@ -227,6 +227,13 @@ float Nanoshield_IMU::readAccelZ() {
   register int16_t zAccel = readFromLSM303DRegister(LSM303D_OUT_Z_H_A) << 8;
   zAccel |= readFromLSM303DRegister(LSM303D_OUT_Z_L_A);
   return (float) zAccel * accelScale / INT16_T_TOP;
+}
+
+float Nanoshield_IMU::setMagnetometerDataRate(int8_t drate) {
+  regCtrl5 &= ~LSM303D_M_ODR_MASK;
+  regCtrl5 |= drate;
+
+  writeIfHasBegun(LSM303D_CTRL5, regCtrl5);
 }
 
 float Nanoshield_IMU::readMagnetX() {
