@@ -308,6 +308,17 @@ public:
   float readAccelZ();
 
   /**
+   * @brief Turns off the magnetometer.
+   * 
+   * Note that the last magnetometer measure stays in the registers. In case
+   * of reading any axis, the returned value will be wrong. To turn the 
+   * magnetometer on again, set a data rate to it.
+   * 
+   * @see setMagnetometerDataRate()
+   */
+  void setMagnetometerPowerDown();
+
+  /**
    * @brief Sets the magnetometer data rate.
    * 
    * Possible data rates:

@@ -12,18 +12,6 @@ void setup() {
   Serial.print("Accelerometer test.\n\n");
   imu.setAccelerometerDataRate(LSM303D_AODR_50);
   imu.begin();
-
-  if(imu.selfTest(selftest)) {
-    digitalWrite(13, HIGH);
-  }
-  
-  Serial.print("selftest x: ");
-  Serial.println(selftest[0]);
-  Serial.print("selftest y: ");
-  Serial.println(selftest[1]);
-  Serial.print("selftest z: ");
-  Serial.println(selftest[2]);
-  Serial.println();
 }
 
 void loop() {
@@ -56,6 +44,18 @@ void loop() {
   Serial.print("MagnetX: ");
   Serial.print(a);
   Serial.println("gauss\n");
+
+  if(millis() > 10000 && !pwrdown) {
+    imu.setMagnetometerPowerDown();
+    digitalWrite(13, HIGH);
+    pwrdown = true;
+  }
+
+  if(millis() > 20000 && !pwrup) {
+    imu.setMagnetometerDataRate(LSM303D_M_ODR_100);
+    digitalWrite(13, LOW);
+    pwrup = true;
+  }
 
   delay(500);
 }

@@ -13,6 +13,8 @@ begin	KEYWORD2
 readAccelX	KEYWORD2
 readAccelY	KEYWORD2
 readAccelZ	KEYWORD2
+setMagnetometerPowerDown	KEYWORD2
+setMagnetometerDataRate	KEYWORD2
 readMagnetX	KEYWORD2
 readMagnetY	KEYWORD2
 readMagnetZ	KEYWORD2

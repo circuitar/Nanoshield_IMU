@@ -229,7 +229,18 @@ float Nanoshield_IMU::readAccelZ() {
   return (float) zAccel * accelScale / INT16_T_TOP;
 }
 
-float Nanoshield_IMU::setMagnetometerDataRate(int8_t drate) {
+void Nanoshield_IMU::setMagnetometerPowerDown() {
+  regCtrl7 |= LSM303D_T_ONLY;
+
+  writeIfHasBegun(LSM303D_CTRL7, regCtrl7);
+}
+
+void Nanoshield_IMU::setMagnetometerDataRate(int8_t drate) {
+  if((regCtrl7 & LSM303D_T_ONLY) > 0) {
+    regCtrl7 &= ~LSM303D_T_ONLY;
+    writeIfHasBegun(LSM303D_CTRL7, regCtrl7);
+  }
+
   regCtrl5 &= ~LSM303D_M_ODR_MASK;
   regCtrl5 |= drate;
 
