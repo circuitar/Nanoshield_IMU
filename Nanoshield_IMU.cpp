@@ -74,7 +74,7 @@ void Nanoshield_IMU::disableAccelZAxis() {
   writeIfHasBegun(LSM303D_CTRL1, regCtrl1);
 }
 
-void Nanoshield_IMU::setFullScale(int8_t scale) {
+void Nanoshield_IMU::setAccelerometerFullScale(int8_t scale) {
   switch(scale) {
     case LSM303D_AFS_2G:
       accelScale = 2;
@@ -245,6 +245,30 @@ void Nanoshield_IMU::setMagnetometerDataRate(int8_t drate) {
   regCtrl5 |= drate;
 
   writeIfHasBegun(LSM303D_CTRL5, regCtrl5);
+}
+
+void Nanoshield_IMU::setMagnetometerFullScale(int8_t scale) {
+  switch(scale) {
+    case LSM303D_MFS_2GAUSS:
+      magnetScale = 2;
+      break;
+    case LSM303D_MFS_4GAUSS:
+      magnetScale = 4;
+      break;
+    case LSM303D_MFS_8GAUSS:
+      magnetScale = 8;
+      break;
+    case LSM303D_MFS_12GAUSS:
+      magnetScale = 12;
+      break;
+    default:
+      return;
+  }
+
+  regCtrl6 &= ~LSM303D_MFS_MASK;
+  regCtrl6 |= scale;
+
+  writeIfHasBegun(LSM303D_CTRL6, regCtrl6);
 }
 
 float Nanoshield_IMU::readMagnetX() {

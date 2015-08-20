@@ -13,23 +13,23 @@
 #define LSM303D_TEMP_OUT_L      (0x05)
 #define LSM303D_TEMP_OUT_H      (0x06)
 #define LSM303D_STATUS_M        (0x07)
-#define LSM303D_OUT_X_L_M       (0x08)  /// Magnetic X axis output lower address.
-#define LSM303D_OUT_X_H_M       (0x09)  /// Magnetic X axis output higher address.
-#define LSM303D_OUT_Y_L_M       (0x0A)  /// Magnetic Y axis output lower address.
-#define LSM303D_OUT_Y_H_M       (0x0B)  /// Magnetic Y axis output higher address.
-#define LSM303D_OUT_Z_L_M       (0x0C)  /// Magnetic Z axis output lower address.
-#define LSM303D_OUT_Z_H_M       (0x0D)  /// Magnetic Z axis output higher address.
+#define LSM303D_OUT_X_L_M       (0x08)  /// Lower address to magnetic X axis output.
+#define LSM303D_OUT_X_H_M       (0x09)  /// Higher address to magnetic X axis output.
+#define LSM303D_OUT_Y_L_M       (0x0A)  /// Lower address to magnetic Y axis output.
+#define LSM303D_OUT_Y_H_M       (0x0B)  /// Higher address to magnetic Y axis output.
+#define LSM303D_OUT_Z_L_M       (0x0C)  /// Lower address to magnetic Z axis output.
+#define LSM303D_OUT_Z_H_M       (0x0D)  /// Higher address to magnetic Z axis output.
 #define LSM303D_WHO_AM_I        (0x0F)
 #define LSM303D_INT_CTRL_M      (0x12)
 #define LSM303D_INT_SRC_M       (0x13)
 #define LSM303D_THS_L_M         (0x14)
 #define LSM303D_THS_H_M         (0x15)
-#define LSM303D_OFFSET_X_L_M    (0x16)
-#define LSM303D_OFFSET_X_H_M    (0x17)
-#define LSM303D_OFFSET_Y_L_M    (0x18)
-#define LSM303D_OFFSET_Y_H_M    (0x19)
-#define LSM303D_OFFSET_Z_L_M    (0x1A)
-#define LSM303D_OFFSET_Z_H_M    (0x1B)
+#define LSM303D_OFFSET_X_L_M    (0x16)  /// Lower address to magnetic offset for X axis.
+#define LSM303D_OFFSET_X_H_M    (0x17)  /// Higher address to magnetic offset for X axis.
+#define LSM303D_OFFSET_Y_L_M    (0x18)  /// Lower address to magnetic offset for Y axis.
+#define LSM303D_OFFSET_Y_H_M    (0x19)  /// Higher address to magnetic offset for Y axis.
+#define LSM303D_OFFSET_Z_L_M    (0x1A)  /// Lower address to magnetic offset for Z axis.
+#define LSM303D_OFFSET_Z_H_M    (0x1B)  /// Higher address to magnetic offset for Z axis.
 #define LSM303D_REFERENCE_X     (0x1C)  /// Reference value for high-pass filter for X-axis acceleration data.
 #define LSM303D_REFERENCE_Y     (0x1D)  /// Reference value for high-pass filter for Y-axis acceleration data.
 #define LSM303D_REFERENCE_Z     (0x1E)  /// Reference value for high-pass filter for Z-axis acceleration data.
@@ -42,12 +42,12 @@
 #define LSM303D_CTRL6           (0x25)  /// Control register 6 address.
 #define LSM303D_CTRL7           (0x26)  /// Control register 7 address.
 #define LSM303D_STATUS_A        (0x27)
-#define LSM303D_OUT_X_L_A       (0x28)  /// Magnetic X axis output lower address.
-#define LSM303D_OUT_X_H_A       (0x29)  /// Magnetic X axis output higher address.
-#define LSM303D_OUT_Y_L_A       (0x2A)  /// Magnetic Y axis output lower address.
-#define LSM303D_OUT_Y_H_A       (0x2B)  /// Magnetic Y axis output higher address.
-#define LSM303D_OUT_Z_L_A       (0x2C)  /// Magnetic Z axis output lower address.
-#define LSM303D_OUT_Z_H_A       (0x2D)  /// Magnetic Z axis output higher address.
+#define LSM303D_OUT_X_L_A       (0x28)  /// Lower address to magnetic X axis output.
+#define LSM303D_OUT_X_H_A       (0x29)  /// Higher address to magnetic X axis output.
+#define LSM303D_OUT_Y_L_A       (0x2A)  /// Lower address to magnetic Y axis output.
+#define LSM303D_OUT_Y_H_A       (0x2B)  /// Higher address to magnetic Y axis output.
+#define LSM303D_OUT_Z_L_A       (0x2C)  /// Lower address to magnetic Z axis output.
+#define LSM303D_OUT_Z_H_A       (0x2D)  /// Higher address to magnetic Z axis output.
 #define LSM303D_FIFO_CTRL       (0x2E)
 #define LSM303D_FIFO_SRC        (0x2F)
 #define LSM303D_IG_CFG1         (0x30)
@@ -151,7 +151,7 @@
 
 // LSM303D_CTRL7 Values
 #define LSM303D_AHPM_MASK       (0xC0)  /// High-pass filter mode selection for acceleration data.
-#define LSM303D_AHPM_NRML_MODE  (0x00)  /// Normal mode (reset X, Y and Z axis reading REFERENCE_X, REFERENCE_Y and REFERENCE_Z registers).
+#define LSM303D_AHPM_NRML_MODE  (0x00)  /// Normal mode (reset X, Y and Z axes reading REFERENCE_X, REFERENCE_Y and REFERENCE_Z registers).
 #define LSM303D_AHPM_REFERENCE  (0x40)  /// Reference signal for filtering.
 #define LSM303D_AHPM_AUTORESET  (0xC0)  /// Auto-reset on interrupt event.
 #define LSM303D_AFDS            (0x20)  /// Send filtered acceleration data to output register and FIFO.
@@ -262,9 +262,9 @@ public:
    * - LSM303D_AFS_8G: +/- 8g (0.244 mg/LSB of sensity)
    * - LSM303D_AFS_16G: +/- 16g (0.732 mg/LSB of sensity)
    * 
-   * @param scale The scalue to adjust the measure.
+   * @param scale The scale to adjust the measure.
    */
-  void setFullScale(int8_t scale);
+  void setAccelerometerFullScale(int8_t scale);
 
   /**
    * @brief Checks if the sensor is working properly.
@@ -336,6 +336,19 @@ public:
    * @param drate Frequency to refresh magnetometer measures.
    */
   void setMagnetometerDataRate(int8_t drate);
+
+  /**
+   * @brief Sets the magnetometer scale range.
+   * 
+   * Possible values:
+   * - LSM303D_MFS_2GAUSS: +/- 2gauss (0.080 mgauss/LSB of sensity)
+   * - LSM303D_MFS_4GAUSS: +/- 4gauss (0.160 mgauss/LSB of sensity)
+   * - LSM303D_MFS_8GAUSS: +/- 8gauss (0.320 mgauss/LSB of sensity)
+   * - LSM303D_MFS_12GAUSS: +/- 12gauss (0.479 mgauss/LSB of sensity)
+   * 
+   * @param scale The scale to adjust the measure.
+   */
+  void setMagnetometerFulScale(int8_t scale);
 
   /**
    * @brief Gets the last magnetic field measured on X axis.
