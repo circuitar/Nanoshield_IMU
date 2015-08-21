@@ -1,10 +1,18 @@
+/**
+ * @file Nanoshield_IMU.h
+ * 
+ * A library to access the Nanoshield IMU v2.0.
+ * It uses the LSM303D for accelerometer, magnetometer and temperature.
+ * 
+ * Copyright (c) 2015 Circuitar
+ * This software is released under the MIT license. See the attached LICENSE file for details.
+ */
 #include <Nanoshield_IMU.h>
 
 #define INT16_T_TOP (32767.0)
 
 Nanoshield_IMU::Nanoshield_IMU(int addr) {
-  lsm303dAddress = LSM303D_ADDRESS;
-  lsm303dAddress |= addr;
+  lsm303dAddress = LSM303D_ADDRESS | addr;
 
   hasBegun = false;
   accelScale = 2;
@@ -18,11 +26,22 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
                | LSM303D_AXEN;      // Accelerometer X axis enabled.
   regCtrl2 = 0 | LSM303D_ABW_773    // Accelerometer anti-alias filter bandwidth 773Hz.
                | LSM303D_AFS_2G;    // Accelerometer full-scale +/- 2g.
-  regCtrl3 = 0;
-  regCtrl4 = 0;
   regCtrl5 = 0 | LSM303D_M_ODR_100;   // Magnetic data rate 100Hz.
   regCtrl6 = 0 | LSM303D_MFS_2GAUSS;  // Magnetic full-scale +/- 2gauss.
-  regCtrl7 = 0;
+  regCtrl7 = 0 | LSM303D_MD_CONTINUOUS; // Magnetometer in continuous mode.
+}
+
+void Nanoshield_IMU::begin() {
+  Wire.begin();
+  writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
+  writeToLSM303DRegister(LSM303D_CTRL1, regCtrl1);
+  writeToLSM303DRegister(LSM303D_CTRL2, regCtrl2);
+  writeToLSM303DRegister(LSM303D_CTRL5, regCtrl5);
+  writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
+  writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
+  writeToLSM303DRegister(LSM303D_INT_CTRL_M, 0 | LSM303D_MIEN);
+  readAccelX();
+  hasBegun = true;
 }
 
 void Nanoshield_IMU::setAccelerometerPowerDown() {
@@ -197,18 +216,9 @@ bool Nanoshield_IMU::selfTest(float diff[]) {
          && zdiff >= -1700);
 }
 
-
-void Nanoshield_IMU::begin() {
-  Wire.begin();
-  writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
-  writeToLSM303DRegister(LSM303D_CTRL1, regCtrl1);
-  writeToLSM303DRegister(LSM303D_CTRL2, regCtrl2);
-  writeToLSM303DRegister(LSM303D_CTRL3, regCtrl3);
-  writeToLSM303DRegister(LSM303D_CTRL4, regCtrl4);
-  writeToLSM303DRegister(LSM303D_CTRL5, regCtrl5);
-  writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
-  writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
-  hasBegun = true;
+bool Nanoshield_IMU::accelHasNewData() {
+  register int8_t statusa = readFromLSM303DRegister(LSM303D_STATUS_A);
+  return statusa > 0;
 }
 
 float Nanoshield_IMU::readAccelX() {
@@ -230,15 +240,14 @@ float Nanoshield_IMU::readAccelZ() {
 }
 
 void Nanoshield_IMU::setMagnetometerPowerDown() {
-  regCtrl7 |= LSM303D_T_ONLY;
+  regCtrl7 |= LSM303D_MD_POWERDOWN;
 
   writeIfHasBegun(LSM303D_CTRL7, regCtrl7);
 }
 
 void Nanoshield_IMU::setMagnetometerDataRate(int8_t drate) {
-  if((regCtrl7 & LSM303D_T_ONLY) > 0) {
-    regCtrl7 &= ~LSM303D_T_ONLY;
-    writeIfHasBegun(LSM303D_CTRL7, regCtrl7);
+  if((regCtrl7 & LSM303D_MD_MASK) != LSM303D_MD_CONTINUOUS) {
+    setMagnetometerContinuousMode();
   }
 
   regCtrl5 &= ~LSM303D_M_ODR_MASK;
@@ -271,6 +280,25 @@ void Nanoshield_IMU::setMagnetometerFullScale(int8_t scale) {
   writeIfHasBegun(LSM303D_CTRL6, regCtrl6);
 }
 
+bool Nanoshield_IMU::magnetHasNewData(){
+  register int8_t statusm = readFromLSM303DRegister(LSM303D_STATUS_M);
+  return statusm > 0;
+}
+
+void Nanoshield_IMU::setMagnetometerContinuousMode() {
+  regCtrl7 &= ~LSM303D_MD_MASK;
+  regCtrl7 |= LSM303D_MD_CONTINUOUS;
+
+  writeIfHasBegun(LSM303D_CTRL7, regCtrl7);
+}
+
+void Nanoshield_IMU::setMagnetometerSingleShot() {
+  regCtrl7 &= ~LSM303D_MD_MASK;
+  regCtrl7 |= LSM303D_MD_SINGLECONV;
+
+  writeIfHasBegun(LSM303D_CTRL7, regCtrl7);
+}
+
 float Nanoshield_IMU::readMagnetX() {
   register int16_t xMagnet = readFromLSM303DRegister(LSM303D_OUT_X_H_M) << 8;
   xMagnet |= readFromLSM303DRegister(LSM303D_OUT_X_L_M);
@@ -289,6 +317,13 @@ float Nanoshield_IMU::readMagnetZ() {
   return (float) zMagnet * magnetScale / INT16_T_TOP;
 }
 
+void Nanoshield_IMU::setInterrupt1Source(int8_t src) {
+  writeToLSM303DRegister(LSM303D_CTRL3, src);
+}
+
+void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
+
+}
 
 void Nanoshield_IMU::writeToLSM303DRegister(int8_t reg, int8_t value) {
   Wire.beginTransmission(lsm303dAddress);

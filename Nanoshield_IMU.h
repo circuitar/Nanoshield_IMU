@@ -1,3 +1,12 @@
+/**
+ * @file Nanoshield_IMU.h
+ * 
+ * A library to access the Nanoshield IMU v2.0.
+ * It uses the LSM303D for accelerometer, magnetometer and temperature.
+ * 
+ * Copyright (c) 2015 Circuitar
+ * This software is released under the MIT license. See the attached LICENSE file for details.
+ */
 #ifndef NANOSHIELD_IMU_H
 #define NANOSHIELD_IMU_H
 
@@ -41,7 +50,7 @@
 #define LSM303D_CTRL5           (0x24)  /// Control register 5 address.
 #define LSM303D_CTRL6           (0x25)  /// Control register 6 address.
 #define LSM303D_CTRL7           (0x26)  /// Control register 7 address.
-#define LSM303D_STATUS_A        (0x27)
+#define LSM303D_STATUS_A        (0x27)  /// Status about accelerometer new data or data overrun.
 #define LSM303D_OUT_X_L_A       (0x28)  /// Lower address to magnetic X axis output.
 #define LSM303D_OUT_X_H_A       (0x29)  /// Higher address to magnetic X axis output.
 #define LSM303D_OUT_Y_L_A       (0x2A)  /// Lower address to magnetic Y axis output.
@@ -66,6 +75,25 @@
 #define LSM303D_TIME_WINDOW     (0x3D)
 #define LSM303D_ACT_THS         (0x3E)
 #define LSM303D_ACT_DUR         (0x3F)
+
+// LSM303D_STATUS_M Values
+#define LSM303D_ZYXMOR          (0x80)
+#define LSM303D_ZMOR            (0x40)  /// Magnetometer Z axis data overrun.
+#define LSM303D_YMOR            (0x20)  /// Magnetometer Y axis data overrun.
+#define LSM303D_XMOR            (0x10)  /// Magnetometer X axis data overrun.
+#define LSM303D_ZYXMDA          (0x08)
+#define LSM303D_ZMDA            (0x04)  /// Magnetometer Z axis new data.
+#define LSM303D_YMDA            (0x02)  /// Magnetometer Y axis new data.
+#define LSM303D_XMDA            (0x01)  /// Magnetometer X axis new data.
+
+// LSM303D_INT_CTRL_M Values
+#define LSM303D_XMIEN           (0x80)  /// Enable interrupt recognition on X axis for magnetic data.
+#define LSM303D_YMIEN           (0x40)  /// Enable interrupt recognition on Y axis for magnetic data.
+#define LSM303D_ZMIEN           (0x20)  /// Enable interrupt recognition on Z axis for magnetic data.
+#define LSM303D_PP_OD           (0x10)  /// Interrupt signal generated with push-pull circuit (0) or open-drain circuit(1).
+#define LSM303D_MIEA            (0x08)  /// Interrupt polarity low (0) or high (1).
+#define LSM303D_MIEL            (0x04)  /// Latch interrupt request. The interrupt is cleared by reading LSM303D_INT_SRC_M.
+#define LSM303D_MIEN            (0x01)  /// Enable interrupt generation for magnetic data.
 
 // LSM303D_CTRL0 Values
 #define LSM303D_BOOT_RBT_MEM    (0x80)  /// Reboot memory content to restore default calibration parameters.
@@ -162,6 +190,16 @@
 #define LSM303D_MD_SINGLECONV   (0x01)  /// Magnetic single conversion mode.
 #define LSM303D_MD_POWERDOWN    (0x03)  /// Magnetic power-down mode.
 
+// LSM303D_STATUS_A Values
+#define LSM303D_ZYXAOR          (0x80)
+#define LSM303D_ZAOR            (0x40)  /// Accelerometer Z axis data overrun.
+#define LSM303D_YAOR            (0x20)  /// Accelerometer Y axis data overrun.
+#define LSM303D_XAOR            (0x10)  /// Accelerometer X axis data overrun.
+#define LSM303D_ZYXADA          (0x08)
+#define LSM303D_ZADA            (0x04)  /// Accelerometer Z axis new data.
+#define LSM303D_YADA            (0x02)  /// Accelerometer Y axis new data.
+#define LSM303D_XADA            (0x01)  /// Accelerometer X axis new data.
+
 class Nanoshield_IMU {
 public:
   /**
@@ -174,6 +212,11 @@ public:
    * @param addr I2C address selected on hardware.
    */
   Nanoshield_IMU(int addr = LSM303D_I2C_1);
+
+  /**
+   * @brief Initializes the communication with Nanoshield_IMU.
+   */
+  void begin();
 
   /**
    * @brief Turns off the accelerometer.
@@ -282,9 +325,11 @@ public:
   bool selfTest(float diff[] = NULL);
 
   /**
-   * @brief Initializes the communication with Nanoshield_IMU.
+   * @brief LOOKS DANGEROUS
+   * 
+   * @return [description]
    */
-  void begin();
+  bool accelHasNewData();
 
   /**
    * @brief Gets the last acceleration measured on X axis.
@@ -348,7 +393,18 @@ public:
    * 
    * @param scale The scale to adjust the measure.
    */
-  void setMagnetometerFulScale(int8_t scale);
+  void setMagnetometerFullScale(int8_t scale);
+
+  /**
+   * @brief LOOKS DANGEROUS Checks if there is new data to be read from magnetometer.
+   *
+   * @return True if there is new data. False otherwise.
+   */
+  bool magnetHasNewData();
+
+  void setMagnetometerContinuousMode();
+
+  void setMagnetometerSingleShot();
 
   /**
    * @brief Gets the last magnetic field measured on X axis.
@@ -370,6 +426,25 @@ public:
    * @return The magnetic field in gauss unit.
    */
   float readMagnetZ();
+
+  /**
+   * @brief Sets the source for interrupt 1 pin.
+   * 
+   * Possible values:
+   * - LSM303D_INT1_BOOT: Notify boot complete.
+   * - LSM303D_INT1_CLICK: Click generator interrupt.
+   * - LSM303D_INT1_IG1: Inertial interrupt generator 1.
+   * - LSM303D_INT1_IG2: Inertial interrupt generator 2.
+   * - LSM303D_INT1_IGM: Magnetic interrut generator.
+   * - LSM303D_INT1_DRDY_A: Accelerometer data ready signal.
+   * - LSM303D_INT1_DRDY_M: Magnetometer data ready signal.
+   * - LSM303D_INT1_EMPTY: FIFO empty indication.
+   * 
+   * @param src The source for interruption 1.
+   */
+  void setInterrupt1Source(int8_t src);
+
+  void setInterrupt2Source(int8_t src);
 
   /**
    * @brief Writes a byte to any accelerometer register.
@@ -400,8 +475,6 @@ protected:
   int8_t regCtrl0;
   int8_t regCtrl1;
   int8_t regCtrl2;
-  int8_t regCtrl3;
-  int8_t regCtrl4;
   int8_t regCtrl5;
   int8_t regCtrl6;
   int8_t regCtrl7;
