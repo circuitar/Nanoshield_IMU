@@ -2,49 +2,52 @@
 #include <Nanoshield_IMU.h>
 #include <util/atomic.h>
 #include <PinChangeInterrupt.h>
-#include <PinChangeInterruptBoards.h>
-#include <PinChangeInterruptPins.h>
-#include <PinChangeInterruptSettings.h>
 
-#define INTERRUPT_PIN 10 // D6 pin
+#define ACCEL_DRDY_PIN 6
+#define MAGNET_DRDY_PIN 5
 
-void dataReady();
+void accelDataReady();
+void magnetDataReady();
 
 Nanoshield_IMU imu;
-bool dataReadyInterruption = false;
 bool accelerometerReady = false;
 bool magnetometerReady = false;
 long lastAccelData = 0;
 long lastMagnetData = 0;
+long lastBlink = 0;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Data Ready Interruption\n");
 
-  pinMode(INTERRUPT_PIN, INPUT);
-  pinMode(11, INPUT);
-  digitalWrite(11, HIGH);
+  pinMode(ACCEL_DRDY_PIN, INPUT);
+  pinMode(MAGNET_DRDY_PIN, INPUT);
+  
   pinMode(13, OUTPUT);
 
-  attachPCINT(digitalPinToPCINT(11), dataReady, FALLING);
-  attachPCINT(digitalPinToPCINT(INTERRUPT_PIN), dataReady, RISING);
 
   imu.setAccelerometerDataRate(LSM303D_AODR_3_125);
-  imu.setInterrupt1Source(LSM303D_INT1_DRDY_A);
+  imu.setMagnetometerDataRate(LSM303D_MODR_3_125);
   imu.begin();
+  imu.setInterrupt1Source(LSM303D_INT1_DRDY_A);
+  imu.setInterrupt2Source(LSM303D_INT2_DRDY_M);
+
+  attachPCINT(digitalPinToPCINT(ACCEL_DRDY_PIN), accelDataReady, RISING);
+  attachPCINT(digitalPinToPCINT(MAGNET_DRDY_PIN), magnetDataReady, RISING);
 }
 
 void loop() {
-  digitalWrite(13, digitalRead(INTERRUPT_PIN));
   bool accelReady = false;
+  bool magnetReady = false;
 
   ATOMIC_BLOCK(ATOMIC_FORCEON) {
     accelReady = accelerometerReady;
+    magnetReady = magnetometerReady;
   }
 
 
   if(accelReady) {
-    //Serial.println(imu.accelHasNewData());
+    
     Serial.print("Period: ");
     Serial.print(millis() - lastAccelData);
     lastAccelData = millis();
@@ -66,8 +69,40 @@ void loop() {
       accelerometerReady = false;
     }
   }
+
+  if(magnetReady) {
+    Serial.print("Period: ");
+    Serial.print(millis() - lastMagnetData);
+    lastMagnetData = millis();
+    Serial.println("ms");
+
+    Serial.print("MagnetX: ");
+    Serial.print(imu.readMagnetX());
+    Serial.println("gauss");
+
+    Serial.print("MagnetY: ");
+    Serial.print(imu.readMagnetY());
+    Serial.println("gauss");
+
+    Serial.print("MagnetZ: ");
+    Serial.print(imu.readMagnetZ());
+    Serial.println("gauss\n");
+
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+      magnetometerReady = false;
+    }
+  }
+
+  if(millis() - lastBlink > 500) {
+    digitalWrite(13, !digitalRead(13));
+    lastBlink = millis();
+  }
 }
 
-void dataReady() {
+void accelDataReady() {
   accelerometerReady = true;
+}
+
+void magnetDataReady() {
+  magnetometerReady = true;
 }

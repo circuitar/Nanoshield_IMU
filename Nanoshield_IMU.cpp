@@ -26,7 +26,7 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
                | LSM303D_AXEN;      // Accelerometer X axis enabled.
   regCtrl2 = 0 | LSM303D_ABW_773    // Accelerometer anti-alias filter bandwidth 773Hz.
                | LSM303D_AFS_2G;    // Accelerometer full-scale +/- 2g.
-  regCtrl5 = 0 | LSM303D_M_ODR_100;   // Magnetic data rate 100Hz.
+  regCtrl5 = 0 | LSM303D_MODR_100;   // Magnetic data rate 100Hz.
   regCtrl6 = 0 | LSM303D_MFS_2GAUSS;  // Magnetic full-scale +/- 2gauss.
   regCtrl7 = 0 | LSM303D_MD_CONTINUOUS; // Magnetometer in continuous mode.
 }
@@ -39,8 +39,6 @@ void Nanoshield_IMU::begin() {
   writeToLSM303DRegister(LSM303D_CTRL5, regCtrl5);
   writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
   writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
-  writeToLSM303DRegister(LSM303D_INT_CTRL_M, 0 | LSM303D_MIEN);
-  readAccelX();
   hasBegun = true;
 }
 
@@ -250,7 +248,7 @@ void Nanoshield_IMU::setMagnetometerDataRate(int8_t drate) {
     setMagnetometerContinuousMode();
   }
 
-  regCtrl5 &= ~LSM303D_M_ODR_MASK;
+  regCtrl5 &= ~LSM303D_MODR_MASK;
   regCtrl5 |= drate;
 
   writeIfHasBegun(LSM303D_CTRL5, regCtrl5);
@@ -319,10 +317,25 @@ float Nanoshield_IMU::readMagnetZ() {
 
 void Nanoshield_IMU::setInterrupt1Source(int8_t src) {
   writeToLSM303DRegister(LSM303D_CTRL3, src);
+  switch(src) {
+    case LSM303D_INT1_DRDY_A: 
+      readAccelX();
+      break;
+  }
 }
 
 void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
+  writeToLSM303DRegister(LSM303D_CTRL4, src);
+  switch(src) {
+    case LSM303D_INT2_DRDY_A: 
+      readAccelX();
+      break;
+  }
+}
 
+void Nanoshield_IMU::setAccelBufferMode(int8_t mode, int8_t threshold) {
+  writeToLSM303DRegister(LSM303D_FIFO_CTRL,
+    (mode & LSM303D_FIFO_MODE_MASK) | (threshold & LSM303D_THRESHOLD_MASK) );
 }
 
 void Nanoshield_IMU::writeToLSM303DRegister(int8_t reg, int8_t value) {

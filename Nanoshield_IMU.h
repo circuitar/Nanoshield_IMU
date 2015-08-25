@@ -160,13 +160,13 @@
 #define LSM303D_M_RES_MASK      (0x60)  /// Magnetic resolution selector.
 #define LSM303D_M_RES_LOW       (0x00)  /// Magnetic low resolution.
 #define LSM303D_M_RES_HIGH      (0x60)  /// Magnetic high resolution.
-#define LSM303D_M_ODR_MASK      (0x1C)  /// Magnetic data rate selection.
-#define LSM303D_M_ODR_3_125     (0x00)  /// Magnetic data rate 3.125Hz.
-#define LSM303D_M_ODR_6_25      (0x04)  /// Magnetic data rate 6.25Hz.
-#define LSM303D_M_ODR_12_5      (0x08)  /// Magnetic data rate 12.5Hz.
-#define LSM303D_M_ODR_25        (0x0C)  /// Magnetic data rate 25Hz.
-#define LSM303D_M_ODR_50        (0x10)  /// Magnetic data rate 50Hz.
-#define LSM303D_M_ODR_100       (0x14)  /// Magnetic data rate 100Hz. Available only for accelerometer ODR > 50Hz or accelerometer in power-down mode.
+#define LSM303D_MODR_MASK       (0x1C)  /// Magnetic data rate selection.
+#define LSM303D_MODR_3_125      (0x00)  /// Magnetic data rate 3.125Hz.
+#define LSM303D_MODR_6_25       (0x04)  /// Magnetic data rate 6.25Hz.
+#define LSM303D_MODR_12_5       (0x08)  /// Magnetic data rate 12.5Hz.
+#define LSM303D_MODR_25         (0x0C)  /// Magnetic data rate 25Hz.
+#define LSM303D_MODR_50         (0x10)  /// Magnetic data rate 50Hz.
+#define LSM303D_MODR_100        (0x14)  /// Magnetic data rate 100Hz. Available only for accelerometer ODR > 50Hz or accelerometer in power-down mode.
 #define LSM303D_LIR2            (0x02)  /// Latch interrupt request on LSM303D_IG_SRC2 register, with LSM303D_IG_SRC2 cleared by reading LSM303D_IG_SRC2 itself.
 #define LSM303D_LIR1            (0x01)  /// Latch interrupt request on LSM303D_IG_SRC1 register, with LSM303D_IG_SRC1 cleared by reading LSM303D_IG_SRC1 itself.
 
@@ -199,6 +199,21 @@
 #define LSM303D_ZADA            (0x04)  /// Accelerometer Z axis new data.
 #define LSM303D_YADA            (0x02)  /// Accelerometer Y axis new data.
 #define LSM303D_XADA            (0x01)  /// Accelerometer X axis new data.
+
+// LSM303D_FIFO_CTRL Values
+#define LSM303D_FIFO_MODE_MASK  (0xE0)
+#define LSM303D_BYPASS          (0x00)
+#define LSM303D_FIFO            (0x20)
+#define LSM303D_STREAM          (0x40)
+#define LSM303D_STREAM2FIFO     (0x60)
+#define LSM303D_BYPASS2STREAM   (0x80)
+#define LSM303D_THRESHOLD_MASK  (0x1F)
+
+// LSM303D_FIFO_SRC Values
+#define LSM303D_FTH_STATUS      (0x80)
+#define LSM303D_OVRN_STATUS     (0x40)
+#define LSM303D_EMPTY_STATUS    (0x20)
+#define LSM303D_FSS_MASK        (0x1F)
 
 class Nanoshield_IMU {
 public:
@@ -444,7 +459,65 @@ public:
    */
   void setInterrupt1Source(int8_t src);
 
+  /**
+   * @brief Sets the source for interrupt 2 pin.
+   * 
+   * Possible values:
+   * - LSM303D_INT2_CLICK:
+   * - LSM303D_INT2_IG1:
+   * - LSM303D_INT2_IG2:
+   * - LSM303D_INT2_IGM:
+   * - LSM303D_INT2_DRDY_A:
+   * - LSM303D_INT2_DRDY_M:
+   * - LSM303D_INT2_OVERRUN:
+   * - LSM303D_INT2_FTH:
+   * 
+   * @param src The source for interruption 2.
+   */
   void setInterrupt2Source(int8_t src);
+
+  /**
+   * @brief Sets the operation mode of the accelerometer buffer.
+   * 
+   * The accelerometer buffer has five operation modes:
+   * - Bypass mode: in bypass mode, the fifo is not operational and for this
+   *                reason it remains empty.
+   * - FIFO mode: In FIFO mode, data from X, Y and Z channels are stored in the
+   *     FIFO. A FIFO threshold interrupt can be enabled in order to be raised
+   *     when the FIFO is filled to the level specified by the internal
+   *     register. The FIFO continues filling until it is full. When full, the
+   *     FIFO stops collecting data from the input channels.
+   * - Stream mode: In Stream mode, data from X, Y and Z measurements are
+   *     stored in the FIFO. A FIFO threshold interrupt can be enabled and set
+   *     as in FIFO mode.The FIFO continues filling until it’s full. When full,
+   *     the FIFO discards the older data as the new arrive.
+   * - Stream-to-FIFO mode: In Stream-to-FIFO mode, data from X, Y and Z
+   *     measurements are stored in the FIFO. A FIFO threshold interrupt can be
+   *     enabled in order to be raised when the FIFO is filled to the level
+   *     specified by the internal register. The FIFO continues filling until
+   *     it’s full. When full, the FIFO discards the older data as the new
+   *     arrive. Once a trigger event occurs, the FIFO starts operating in FIFO
+   *     mode.
+   * - Bypass-to-Stream mode: In Bypass-to-Stream mode, the FIFO starts 
+   *     operating in Bypass mode and once a trigger event occurs (related to
+   *     IG_CFG1 (30h) register events), the FIFO starts operating in Stream
+   *     mode.
+   * 
+   * FIFO is read through readAccelX(), readAccelY() and readAccelZ(). Each
+   * time data is read from the FIFO, the oldest measures are placed at output
+   * registers.
+   * 
+   * @param mode The FIFO operation mode. Possible values:
+   *             - LSM303D_BYPASS
+   *             - LSM303D_FIFO
+   *             - LSM303D_STREAM
+   *             - LSM303D_STREAM2FIFO
+   *             - LSM303D_BYPASS2STREAM
+   * @param threshold The threshold to FIFO size interruption. It is optional
+   *                  with 31 as default value, as it is the maximum buffer
+   *                  size.
+   */
+  void setAccelBufferMode(int8_t mode, int8_t threshold = 31);
 
   /**
    * @brief Writes a byte to any accelerometer register.
