@@ -93,10 +93,12 @@ void loop() {
     }
   }
 
-  if(millis() - lastBlink > 500) {
-    digitalWrite(13, !digitalRead(13));
-    lastBlink = millis();
-  }
+  // if(millis() - lastBlink > 500) {
+  //   digitalWrite(13, !digitalRead(13));
+  //   lastBlink = millis();
+  // }
+
+  //digitalWrite(13, digitalRead(ACCEL_DRDY_PIN));
 }
 
 void accelDataReady() {

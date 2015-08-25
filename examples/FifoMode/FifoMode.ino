@@ -37,6 +37,10 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Waiting buffer to fill...");
   Serial.println();
+  Serial.println(imu.readFromLSM303DRegister(LSM303D_CTRL3));
+  Serial.println(imu.readFromLSM303DRegister(LSM303D_CTRL4));
+  Serial.println(imu.readFromLSM303DRegister(LSM303D_FIFO_CTRL));
+  Serial.println();
   Serial.flush();
   Serial.end();
 
