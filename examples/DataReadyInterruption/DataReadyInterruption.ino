@@ -1,10 +1,24 @@
+/**
+ * @file DataReadyInterruption.ino
+ * Reads the accelerometer and magnetometer asynchronously through the data
+ * ready interruption. Demonstrates a way to attach interruption to any arduino
+ * pin using the PinChangeInterrupt library.
+ * 
+ * Copyright (c) 2015 Circuitar
+ * This software is released under the MIT license. See the attached LICENSE file for details.
+ */
 #include <Wire.h>
 #include <Nanoshield_IMU.h>
 #include <util/atomic.h>
+/*
+ * To install the PinChangeInterrupt library download the library as zip from
+ * this link <https://github.com/NicoHood/PinChangeInterrupt>. After it, in
+ * Arduino IDE, select Sketch > Include library > Add .ZIP library.
+ */
 #include <PinChangeInterrupt.h>
 
-#define ACCEL_DRDY_PIN 6
-#define MAGNET_DRDY_PIN 5
+#define ACCEL_DRDY_PIN 6  // Pin used to accelerometer data ready interruption.
+#define MAGNET_DRDY_PIN 5 // Pin used to magnetometer data ready interruption.
 
 void accelDataReady();
 void magnetDataReady();
@@ -14,40 +28,40 @@ bool accelerometerReady = false;
 bool magnetometerReady = false;
 long lastAccelData = 0;
 long lastMagnetData = 0;
-long lastBlink = 0;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Data Ready Interruption\n");
 
+  // Setup both accel and magnetometer drdy (data ready) pins as input.
   pinMode(ACCEL_DRDY_PIN, INPUT);
   pinMode(MAGNET_DRDY_PIN, INPUT);
-  
-  pinMode(13, OUTPUT);
 
-
+  // The data ready interruption just works with 3.125Hz and 6.25Hz.
   imu.setAccelerometerDataRate(LSM303D_AODR_3_125);
   imu.setMagnetometerDataRate(LSM303D_MODR_3_125);
-  imu.begin();
-  imu.setInterrupt1Source(LSM303D_INT1_DRDY_A);
-  imu.setInterrupt2Source(LSM303D_INT2_DRDY_M);
+  imu.begin(); // Post configuration to Nanoshield.
+  imu.setInterrupt1Source(LSM303D_INT1_DRDY_A); // Set INT1 as accel drdy.
+  imu.setInterrupt2Source(LSM303D_INT2_DRDY_M); // Set INT2 as magnet drdy.
 
+  // Attach the interruption handlers to its interruptions pin.
   attachPCINT(digitalPinToPCINT(ACCEL_DRDY_PIN), accelDataReady, RISING);
   attachPCINT(digitalPinToPCINT(MAGNET_DRDY_PIN), magnetDataReady, RISING);
 }
 
 void loop() {
+  // Local flags to avoid concurrency with interruptions.
   bool accelReady = false;
   bool magnetReady = false;
 
+  // Atomic reading to avoid concurrency with the interruptions.
   ATOMIC_BLOCK(ATOMIC_FORCEON) {
     accelReady = accelerometerReady;
     magnetReady = magnetometerReady;
   }
 
-
+  // Handles accel drdy interruption.
   if(accelReady) {
-    
     Serial.print("Period: ");
     Serial.print(millis() - lastAccelData);
     lastAccelData = millis();
@@ -70,6 +84,7 @@ void loop() {
     }
   }
 
+  // Handles magnet drdy interruption.
   if(magnetReady) {
     Serial.print("Period: ");
     Serial.print(millis() - lastMagnetData);
@@ -92,19 +107,14 @@ void loop() {
       magnetometerReady = false;
     }
   }
-
-  // if(millis() - lastBlink > 500) {
-  //   digitalWrite(13, !digitalRead(13));
-  //   lastBlink = millis();
-  // }
-
-  //digitalWrite(13, digitalRead(ACCEL_DRDY_PIN));
 }
 
+// Sets a flag to handle an accel drdy interruption.
 void accelDataReady() {
   accelerometerReady = true;
 }
 
+// Sets a flag to handle a magnet drdy interruption.
 void magnetDataReady() {
   magnetometerReady = true;
 }

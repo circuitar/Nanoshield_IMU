@@ -29,6 +29,7 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   regCtrl5 = 0 | LSM303D_MODR_100;   // Magnetic data rate 100Hz.
   regCtrl6 = 0 | LSM303D_MFS_2GAUSS;  // Magnetic full-scale +/- 2gauss.
   regCtrl7 = 0 | LSM303D_MD_CONTINUOUS; // Magnetometer in continuous mode.
+  fifoCtrl = 0;                     // FIFO disabled.
 }
 
 void Nanoshield_IMU::begin() {
@@ -39,6 +40,7 @@ void Nanoshield_IMU::begin() {
   writeToLSM303DRegister(LSM303D_CTRL5, regCtrl5);
   writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
   writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
+  writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
   hasBegun = true;
 }
 
@@ -333,9 +335,30 @@ void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
   }
 }
 
+void Nanoshield_IMU::enableAccelBuffer() {
+  regCtrl0 |= LSM303D_FIFO_EN
+              | LSM303D_FTH_EN;
+  writeIfHasBegun(LSM303D_CTRL0, regCtrl0);
+
+  if(fifoCtrl == 0) {
+    fifoCtrl |= 0x20 | 0x1F;
+    writeIfHasBegun(LSM303D_FIFO_CTRL, fifoCtrl);
+  }
+}
+
+void Nanoshield_IMU::disableAccelBuffer() {
+  regCtrl0 &= ~(LSM303D_FIFO_EN
+                | LSM303D_FTH_EN);
+  writeIfHasBegun(LSM303D_CTRL0, regCtrl0);
+}
+
 void Nanoshield_IMU::setAccelBufferMode(int8_t mode, int8_t threshold) {
-  writeToLSM303DRegister(LSM303D_FIFO_CTRL,
+  writeIfHasBegun(LSM303D_FIFO_CTRL,
     (mode & LSM303D_FIFO_MODE_MASK) | (threshold & LSM303D_THRESHOLD_MASK) );
+}
+
+int Nanoshield_IMU::getBufferCount() {
+  return readFromLSM303DRegister(LSM303D_FIFO_SRC) & LSM303D_FSS_MASK;
 }
 
 void Nanoshield_IMU::writeToLSM303DRegister(int8_t reg, int8_t value) {

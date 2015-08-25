@@ -452,10 +452,17 @@ public:
    * - LSM303D_INT1_IG2: Inertial interrupt generator 2.
    * - LSM303D_INT1_IGM: Magnetic interrut generator.
    * - LSM303D_INT1_DRDY_A: Accelerometer data ready signal.
+   *     Note that data ready interruption works if data rate is 3.125Hz or 
+   *     6.25Hz.
    * - LSM303D_INT1_DRDY_M: Magnetometer data ready signal.
+   *     Note that data ready interruption works if data rate is 3.125Hz or 
+   *     6.25Hz.
    * - LSM303D_INT1_EMPTY: FIFO empty indication.
    * 
    * @param src The source for interruption 1.
+   * 
+   * @see setAccelerometerDataRate()
+   * @see setMagnetometerDataRate()
    */
   void setInterrupt1Source(int8_t src);
 
@@ -468,11 +475,18 @@ public:
    * - LSM303D_INT2_IG2:
    * - LSM303D_INT2_IGM:
    * - LSM303D_INT2_DRDY_A:
+   *     Note that data ready interruption works if data rate is 3.125Hz or 
+   *     6.25Hz.
    * - LSM303D_INT2_DRDY_M:
+   *     Note that data ready interruption works if data rate is 3.125Hz or 
+   *     6.25Hz.
    * - LSM303D_INT2_OVERRUN:
    * - LSM303D_INT2_FTH:
    * 
    * @param src The source for interruption 2.
+   * 
+   * @see setAccelerometerDataRate()
+   * @see setMagnetometerDataRate()
    */
   void setInterrupt2Source(int8_t src);
 
@@ -520,6 +534,33 @@ public:
   void setAccelBufferMode(int8_t mode, int8_t threshold = 31);
 
   /**
+   * @brief Enable the accelerometer buffer.
+   * 
+   * If no mode or threshold is set to buffer, so it keep default value:
+   * - Mode: LSM303D_FIFO
+   * - Threshold: 31
+   * 
+   * @see setAccelBufferMode()
+   */
+  void enableAccelBuffer();
+
+  /**
+   * @brief Disable the accelerometer buffer.
+   * 
+   * When the accelerometer buffer is disable, the last buffer mode is kept.
+   * In case of reenabling buffer, it will operate in last buffer mode and
+   * threshold.
+   */
+  void disableAccelBuffer();
+
+  /**
+   * @brief Gets how many elements in accelerometer buffer.
+   * 
+   * @return The element count in accelerometer buffer.
+   */
+  int getBufferCount();
+
+  /**
    * @brief Writes a byte to any accelerometer register.
    * 
    * @param reg Register address.
@@ -551,6 +592,7 @@ protected:
   int8_t regCtrl5;
   int8_t regCtrl6;
   int8_t regCtrl7;
+  int8_t fifoCtrl;
 
   int i2cError;
   int8_t accelScale;
