@@ -3,54 +3,79 @@
 #include <util/atomic.h>
 #include <PinChangeInterrupt.h>
 
-#define FIFO_DRDY_PIN 5
+#define FTH_INT_PIN 5
+#define EMPTY_INT_PIN 6
 
 void bufferFull();
+void bufferEmpty();
 
 Nanoshield_IMU imu;
-bool accelerometerReady = false;
-bool bufferReady = false;
-long lastAccelData = 0;
-long lastMagnetData = 0;
-long lastBlink = 0;
-int accelCount = 0;
+long timesec = 0, tsec= 0;
+bool bufferStatus = false;
+bool resetBuffer = false;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Data Ready Interruption\n");
-  
-  pinMode(FIFO_DRDY_PIN, INPUT);
+
+  pinMode(FTH_INT_PIN, INPUT);
+  pinMode(EMPTY_INT_PIN, INPUT);
   
   pinMode(13, OUTPUT);
 
-
-  imu.setAccelerometerDataRate(LSM303D_AODR_3_125);
-  imu.enableAccelBuffer();
+  imu.setAccelerometerDataRate(LSM303D_AODR_100);
+  imu.enableAccelBuffer(LSM303D_FIFO, 19);
   imu.begin();
+
+  imu.setInterrupt1Source(LSM303D_INT1_EMPTY);
   imu.setInterrupt2Source(LSM303D_INT2_FTH);
 
-  attachPCINT(digitalPinToPCINT(FIFO_DRDY_PIN), bufferFull, RISING);
+  attachPCINT(digitalPinToPCINT(FTH_INT_PIN), bufferFull, RISING);
+  attachPCINT(digitalPinToPCINT(EMPTY_INT_PIN), bufferEmpty, RISING);
 }
 
 void loop() {
-  digitalWrite(13, digitalRead(FIFO_DRDY_PIN));
-  bool accelReady = false;
-  bool bufReady = false;
+  digitalWrite(13, digitalRead(FTH_INT_PIN));
+  bool bStatus = false;
+  bool rstBuffer = false;
 
   ATOMIC_BLOCK(ATOMIC_FORCEON) {
-    bufReady = bufferReady;
+    bStatus = bufferStatus;
+    rstBuffer = resetBuffer;
   }
 
-  if(bufReady) {
-    Serial.println("bufferFull!");
-    Serial.println(imu.getBufferCount());
+  if(bStatus) {
+    Serial.print("AccelX: ");
+    Serial.print(imu.readAccelX());
+    Serial.println("g");
+
+    Serial.print("AccelY: ");
+    Serial.print(imu.readAccelY());
+    Serial.println("g");
+
+    Serial.print("AccelZ: ");
+    Serial.print(imu.readAccelZ());
+    Serial.println("g\n");
+  }
+
+  if(rstBuffer) {
+    Serial.println();
+    Serial.println("-----------------------");
+    Serial.println();
+
+    imu.resetAccelBuffer();
 
     ATOMIC_BLOCK(ATOMIC_FORCEON) {
-      bufferReady = false;
+      resetBuffer = false;
     }
   }
 }
 
 void bufferFull() {
-  bufferReady = true;
+  bufferStatus = true;
+}
+
+void bufferEmpty() {
+  bufferStatus = false;
+  resetBuffer = true;
 }

@@ -491,16 +491,17 @@ public:
   void setInterrupt2Source(int8_t src);
 
   /**
-   * @brief Sets the operation mode of the accelerometer buffer.
+   * @brief Enables the accelerometer buffer.
    * 
    * The accelerometer buffer has five operation modes:
    * - Bypass mode: in bypass mode, the fifo is not operational and for this
-   *                reason it remains empty.
+   *     reason it remains empty.
    * - FIFO mode: In FIFO mode, data from X, Y and Z channels are stored in the
-   *     FIFO. A FIFO threshold interrupt can be enabled in order to be raised
-   *     when the FIFO is filled to the level specified by the internal
+   *     FIFO. A FIFO threshold/overrun interrupt can be enabled in order to be
+   *     raised when the FIFO is filled to the level specified by the internal
    *     register. The FIFO continues filling until it is full. When full, the
-   *     FIFO stops collecting data from the input channels.
+   *     FIFO stops collecting data from the input channels. After all data is
+   *     read from FIFO, call resetAccelBuffer() to start reading again.
    * - Stream mode: In Stream mode, data from X, Y and Z measurements are
    *     stored in the FIFO. A FIFO threshold interrupt can be enabled and set
    *     as in FIFO mode.The FIFO continues filling until it’s full. When full,
@@ -514,35 +515,22 @@ public:
    *     mode.
    * - Bypass-to-Stream mode: In Bypass-to-Stream mode, the FIFO starts 
    *     operating in Bypass mode and once a trigger event occurs (related to
-   *     IG_CFG1 (30h) register events), the FIFO starts operating in Stream
+   *     LSM303D_IG_CFG1 register events), the FIFO starts operating in Stream
    *     mode.
+   *     
+   * A threshold can be set in order to reduce the FIFO size. The maximum size
+   * is 32 but, as threshold is pre-indexed, it is represented as 31. In the
+   * same way, a FIFO with only 2 positions has a threshold 1, and a 3 positions
+   * FIFO has a threshold 2.
    * 
-   * FIFO is read through readAccelX(), readAccelY() and readAccelZ(). Each
-   * time data is read from the FIFO, the oldest measures are placed at output
-   * registers.
-   * 
-   * @param mode The FIFO operation mode. Possible values:
-   *             - LSM303D_BYPASS
-   *             - LSM303D_FIFO
-   *             - LSM303D_STREAM
-   *             - LSM303D_STREAM2FIFO
-   *             - LSM303D_BYPASS2STREAM
-   * @param threshold The threshold to FIFO size interruption. It is optional
-   *                  with 31 as default value, as it is the maximum buffer
-   *                  size.
+   * @param mode Optional. The default operation mode is FIFO mode.
+   * @param threshold Optional. The default threshold is 31, which uses all the
+   *                  FIFO size.
+   *                  
+   * @see disableAccelBuffer()
+   * @see resetAccelBuffer()
    */
-  void setAccelBufferMode(int8_t mode, int8_t threshold = 31);
-
-  /**
-   * @brief Enable the accelerometer buffer.
-   * 
-   * If no mode or threshold is set to buffer, so it keep default value:
-   * - Mode: LSM303D_FIFO
-   * - Threshold: 31
-   * 
-   * @see setAccelBufferMode()
-   */
-  void enableAccelBuffer();
+  void enableAccelBuffer(int8_t mode = LSM303D_FIFO, int8_t threshold = 31);
 
   /**
    * @brief Disable the accelerometer buffer.
@@ -552,6 +540,18 @@ public:
    * threshold.
    */
   void disableAccelBuffer();
+
+  /**
+   * @brief Cleans all FIFO data and restarts it.
+   *  
+   * The reset proccess is basically put FIFO in bypass mode and change it back
+   * to the mode selected by the user. It causes to clean all the data in FIFO
+   * and restarts the operation.
+   * 
+   * It is necessary in FIFO mode, where the buffer is blocked once the thereshold
+   * is reached, or a overrun occur. To unblock the buffer a reset must be done.
+   */
+  void resetAccelBuffer();
 
   /**
    * @brief Gets how many elements in accelerometer buffer.

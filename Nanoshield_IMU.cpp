@@ -34,13 +34,19 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
 
 void Nanoshield_IMU::begin() {
   Wire.begin();
-  writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
+
   writeToLSM303DRegister(LSM303D_CTRL1, regCtrl1);
   writeToLSM303DRegister(LSM303D_CTRL2, regCtrl2);
   writeToLSM303DRegister(LSM303D_CTRL5, regCtrl5);
   writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
   writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
+
+  writeToLSM303DRegister(LSM303D_CTRL0, 0);
+  writeToLSM303DRegister(LSM303D_FIFO_CTRL, 0);
+
+  writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
   writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
+
   hasBegun = true;
 }
 
@@ -335,15 +341,17 @@ void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
   }
 }
 
-void Nanoshield_IMU::enableAccelBuffer() {
-  regCtrl0 |= LSM303D_FIFO_EN
-              | LSM303D_FTH_EN;
+void Nanoshield_IMU::enableAccelBuffer(int8_t mode, int8_t threshold) {
+  if(threshold < 31) {
+    regCtrl0 |= LSM303D_FTH_EN;
+    fifoCtrl |= threshold & LSM303D_THRESHOLD_MASK;
+  }
+
+  regCtrl0 |= LSM303D_FIFO_EN;
   writeIfHasBegun(LSM303D_CTRL0, regCtrl0);
 
-  if(fifoCtrl == 0) {
-    fifoCtrl |= 0x20 | 0x1F;
-    writeIfHasBegun(LSM303D_FIFO_CTRL, fifoCtrl);
-  }
+  fifoCtrl |= mode & LSM303D_FIFO_MODE_MASK;
+  writeIfHasBegun(LSM303D_FIFO_CTRL, fifoCtrl);
 }
 
 void Nanoshield_IMU::disableAccelBuffer() {
@@ -352,9 +360,11 @@ void Nanoshield_IMU::disableAccelBuffer() {
   writeIfHasBegun(LSM303D_CTRL0, regCtrl0);
 }
 
-void Nanoshield_IMU::setAccelBufferMode(int8_t mode, int8_t threshold) {
-  writeIfHasBegun(LSM303D_FIFO_CTRL,
-    (mode & LSM303D_FIFO_MODE_MASK) | (threshold & LSM303D_THRESHOLD_MASK) );
+void Nanoshield_IMU::resetAccelBuffer() {
+  writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl 
+                                            & ~LSM303D_FIFO_MODE_MASK 
+                                            | LSM303D_BYPASS);
+  writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
 }
 
 int Nanoshield_IMU::getBufferCount() {
