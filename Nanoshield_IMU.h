@@ -459,6 +459,10 @@ public:
    *     6.25Hz.
    * - LSM303D_INT1_EMPTY: FIFO empty indication.
    * 
+   * To attach a interruption to any arduino pin, use the PCInt feature of
+   * atmega 328. PinChangeInterrupt <https://github.com/NicoHood/PinChangeInterrupt>
+   * is a library that implements this feature to various microcontrollers.
+   * 
    * @param src The source for interruption 1.
    * 
    * @see setAccelerometerDataRate()
@@ -482,6 +486,10 @@ public:
    *     6.25Hz.
    * - LSM303D_INT2_OVERRUN:
    * - LSM303D_INT2_FTH:
+   * 
+   * To attach a interruption to any arduino pin, use the PCInt feature of
+   * atmega 328. PinChangeInterrupt <https://github.com/NicoHood/PinChangeInterrupt>
+   * is a library that implements this feature to various microcontrollers.
    * 
    * @param src The source for interruption 2.
    * 
@@ -529,6 +537,7 @@ public:
    *                  
    * @see disableAccelBuffer()
    * @see resetAccelBuffer()
+   * @see getBufferCount()
    */
   void enableAccelBuffer(int8_t mode = LSM303D_FIFO, int8_t threshold = 31);
 
@@ -554,7 +563,7 @@ public:
   void resetAccelBuffer();
 
   /**
-   * @brief Gets how many elements in accelerometer buffer.
+   * @brief Gets how many elements are in accelerometer buffer.
    * 
    * @return The element count in accelerometer buffer.
    */
