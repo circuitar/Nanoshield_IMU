@@ -340,6 +340,22 @@ public:
   bool selfTest(float diff[] = NULL);
 
   /**
+   * @brief Filter the analog input signal before sampling the data.
+   *
+   * The anti-alias filter restricts the bandwidth of a signal to satisfy the 
+   * Nyquist sampling theorem.
+   * 
+   * Possible values to bandwisth is
+   * - LSM303D_ABW_773: 773Hz.
+   * - LSM303D_ABW_362: 362Hz.
+   * - LSM303D_ABW_194: 194Hz.
+   * - LSM303D_ABW_50: 50Hz.
+   * 
+   * @param bandwidth The bandwidth to filter.
+   */
+  void setAccelAntialiasFilter(int8_t bandwidth);
+
+  /**
    * @brief LOOKS DANGEROUS
    * 
    * @return [description]

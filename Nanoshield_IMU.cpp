@@ -41,11 +41,15 @@ void Nanoshield_IMU::begin() {
   writeToLSM303DRegister(LSM303D_CTRL6, regCtrl6);
   writeToLSM303DRegister(LSM303D_CTRL7, regCtrl7);
 
+  // Not initializing CTRL0 and FIFO_CTRL with 0 results in some problems with FIFO.
   writeToLSM303DRegister(LSM303D_CTRL0, 0);
   writeToLSM303DRegister(LSM303D_FIFO_CTRL, 0);
 
-  writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
-  writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
+  // Just rewrite CTRL0 and FIFO_CTRL if they are set to something
+  if(regCtrl0 != 0 || fifoCtrl != 0) {
+    writeToLSM303DRegister(LSM303D_CTRL0, regCtrl0);
+    writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
+  }
 
   hasBegun = true;
 }
@@ -213,13 +217,20 @@ bool Nanoshield_IMU::selfTest(float diff[]) {
          && ydiff >= 70
          && ydiff <= 1700
          && zdiff >= 70
-         && zdiff <= 1700) ||
-         (xdiff <= -70     // Signal does not matter
+         && zdiff <= 1700)
+         || (xdiff <= -70     // Signal does not matter
          && xdiff >= -1700
          && ydiff <= -70
          && ydiff >= -1700
          && zdiff <= -70
          && zdiff >= -1700);
+}
+
+void setAccelAntialiasFilter(int8_t bandwidth) {
+  regCtrl2 &= ~LSM303D_ABW_MASK;
+  regCtrl2 |= bandwidth;
+
+  writeIfHasBegun(LSM303D_CTRL2, regCtrl2);
 }
 
 bool Nanoshield_IMU::accelHasNewData() {

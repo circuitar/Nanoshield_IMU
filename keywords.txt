@@ -10,6 +10,7 @@ enableAccelZAxis	KEYWORD2
 disableAccelZAxis	KEYWORD2
 setAccelerometerFullScale	KEYWORD2
 selfTest	KEYWORD2
+setAccelAntialiasFilter	KEYWORD2
 accelHasNewData	KEYWORD2
 begin	KEYWORD2
 readAccelX	KEYWORD2
