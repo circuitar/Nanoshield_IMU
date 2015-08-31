@@ -210,9 +210,9 @@
 #define LSM303D_THRESHOLD_MASK  (0x1F)
 
 // LSM303D_FIFO_SRC Values
-#define LSM303D_FTH_STATUS      (0x80)
-#define LSM303D_OVRN_STATUS     (0x40)
-#define LSM303D_EMPTY_STATUS    (0x20)
+#define LSM303D_FTH_STATUS      (0x80)  /// Notify a threshold hit.
+#define LSM303D_OVRN_STATUS     (0x40)  /// Notify a buffer overrun
+#define LSM303D_EMPTY_STATUS    (0x20)  /// Notify empty buffer
 #define LSM303D_FSS_MASK        (0x1F)
 
 // LSM303D_IG_CFG1/LSM303D_IG_CFG2 Values
@@ -228,6 +228,19 @@
 #define LSM303D_ZONE_YL           (0x04)  /// Enable interrupt on low Y event.
 #define LSM303D_ZONE_XH           (0x02)  /// Enable interrupt on high X event.
 #define LSM303D_ZONE_XL           (0x01)  /// Enable interrupt on low X event.
+
+// LSM303D_IG_SRC1/LSM303D_IG_SRC2 Values
+#define LSM303D_INT_GENERATED   (0x40)  /// Notify that an IG interruption occurred. Reading the LSM303D_IG_SRC1/LSM303D_IG_SRC2 will clear the respective bit.
+/*
+ * To check the axes the zone flags can be used:
+ * LSM303D_ZONE_MASK
+ * LSM303D_ZONE_ZH
+ * LSM303D_ZONE_ZL
+ * LSM303D_ZONE_YH
+ * LSM303D_ZONE_YL
+ * LSM303D_ZONE_XH
+ * LSM303D_ZONE_XL
+ */
 
 
 class Nanoshield_IMU {
@@ -593,28 +606,194 @@ public:
    */
   void resetAccelBuffer();
 
+  /**
+   * @brief Sets the interrupt generator 1 operation mode
+   * 
+   * Possible operation modes:
+   * - LSM303D_INTMODE_OR: trigger interruption on OR combination of specified 
+   *     zones.
+   * - LSM303D_INTMODE_MOVEMENT: pulses interruption signal if acceleration 
+   *     vector moves from an unknown zone to a known zone.
+   * - LSM303D_INTMODE_AND: trigger interruption on AND conbination of 
+   *     specified zones.
+   * - LSM303D_INTMODE_POSITION: keeps interruption signal while acceleration
+   *     vector stays inside a known zone.
+   * 
+   * @param mode Operation mode of the interrupt generator.
+   */
   void setAccelIntGenerator1Mode(int8_t mode);
 
+  /**
+   * @brief Adds an axis to the interrupt generator 1 specified zones.
+   * 
+   * Possible values are:
+   * - LSM303D_ZONE_ZH: Positive part of Z axis.
+   * - LSM303D_ZONE_ZL: Negative part of Z axis.
+   * - LSM303D_ZONE_YH: Positive part of Y axis.
+   * - LSM303D_ZONE_YL: Negative part of Y axis.
+   * - LSM303D_ZONE_XH: Positive part of X axis.
+   * - LSM303D_ZONE_XL: Negative part of X axis.
+   * 
+   * @param zone Axis to add to zones.
+   */
   void addToAccelIntGenerator1Zone(int8_t zone);
 
+  /**
+   * @brief Removes an axis from the interrupt generator 1 specified zones.
+   * 
+   * Possible values are:
+   * - LSM303D_ZONE_ZH: Positive part of Z axis.
+   * - LSM303D_ZONE_ZL: Negative part of Z axis.
+   * - LSM303D_ZONE_YH: Positive part of Y axis.
+   * - LSM303D_ZONE_YL: Negative part of Y axis.
+   * - LSM303D_ZONE_XH: Positive part of X axis.
+   * - LSM303D_ZONE_XL: Negative part of X axis.
+   * 
+   * @param zone Axis to remove from zones.
+   */
   void removeFromAccelIntGenerator1Zone(int8_t zone);
 
+  /**
+   * @brief Sets the threshold on all interrupt generator 1 specified zones.
+   * 
+   * The interruption generator will only recognize accelerations greater than
+   * the threshold in all specified zones.
+   * 
+   * @param threshold The acceleration threshold to trigger interruption.
+   */
   void setAccelIntGenerator1Threshold(float threshold);
 
+  /**
+   * @brief Sets the duration of the interruption pulse to interrupt generator 1.
+   * 
+   * @param duration Interruption pulse duration in periods of data rate.
+   */
   void setAccelIntGenerator1Duration(int8_t duration);
 
+  /**
+   * @brief Gets the values on the interrupt generator 1 status register.
+   * 
+   * The status information can be extracted by the doing an and operation
+   * between the status and a mask. If the result is greater than 0, then the
+   * flag is set. Example:
+   * 
+   * // Checking if detected acceleration vector has components in positive Z axis.
+   * Nanoshield imu;
+   * 
+   * [...]
+   * 
+   * int igstatus = imu.getAccelIntGenerator1Status();
+   * if((igstatus & LSM303D_ZONE_ZH) > 0) {
+   *   Serial.println("Movement on positive Z axis!");
+   * }
+   * 
+   * The available flags to checks are:
+   * - LSM303D_INT_GENERATED: An interruption or more has occurred. This bits
+   *     clears automatically after it is read.
+   * - LSM303D_ZONE_ZH: Acceleration on positive Z axis detected.
+   * - LSM303D_ZONE_ZL: Acceleration on negative Z axis detected.
+   * - LSM303D_ZONE_YH: Acceleration on positive Y axis detected.
+   * - LSM303D_ZONE_YL: Acceleration on negative Y axis detected.
+   * - LSM303D_ZONE_XH: Acceleration on positive X axis detected.
+   * - LSM303D_ZONE_XL: Acceleration on negative X axis detected.
+   * 
+   * @return The value on interrut generator 1 status register.
+   */
   int8_t getAccelIntGenerator1Status();
 
+  /**
+   * @brief Sets the interrupt generator 2 operation mode
+   * 
+   * Possible operation modes:
+   * - LSM303D_INTMODE_OR: trigger interruption on OR combination of specified 
+   *     zones.
+   * - LSM303D_INTMODE_MOVEMENT: pulses interruption signal if acceleration 
+   *     vector moves from an unknown zone to a known zone.
+   * - LSM303D_INTMODE_AND: trigger interruption on AND conbination of 
+   *     specified zones.
+   * - LSM303D_INTMODE_POSITION: keeps interruption signal while acceleration
+   *     vector stays inside a known zone.
+   * 
+   * @param mode Operation mode of the interrupt generator.
+   */
   void setAccelIntGenerator2Mode(int8_t mode);
 
+  /**
+   * @brief Adds an axis to the interrupt generator 2 specified zones.
+   * 
+   * Possible values are:
+   * - LSM303D_ZONE_ZH: Positive part of Z axis.
+   * - LSM303D_ZONE_ZL: Negative part of Z axis.
+   * - LSM303D_ZONE_YH: Positive part of Y axis.
+   * - LSM303D_ZONE_YL: Negative part of Y axis.
+   * - LSM303D_ZONE_XH: Positive part of X axis.
+   * - LSM303D_ZONE_XL: Negative part of X axis.
+   * 
+   * @param zone [description]
+   */
   void addToAccelIntGenerator2Zone(int8_t zone);
 
+  /**
+   * @brief Removes an axis from the interrupt generator 2 specified zones.
+   * 
+   * Possible values are:
+   * - LSM303D_ZONE_ZH: Positive part of Z axis.
+   * - LSM303D_ZONE_ZL: Negative part of Z axis.
+   * - LSM303D_ZONE_YH: Positive part of Y axis.
+   * - LSM303D_ZONE_YL: Negative part of Y axis.
+   * - LSM303D_ZONE_XH: Positive part of X axis.
+   * - LSM303D_ZONE_XL: Negative part of X axis.
+   * 
+   * @param zone Axis to remove from zones.
+   */
   void removeFromAccelIntGenerator2Zone(int8_t zone);
 
+  /**
+   * @brief Sets the threshold on all interrupt generator 2 specified zones.
+   * 
+   * The interruption generator will only recognize accelerations greater than
+   * the threshold in all specified zones.
+   * 
+   * @param threshold The acceleration threshold to trigger interruption.
+   */
   void setAccelIntGenerator2Threshold(float threshold);
 
+  /**
+   * @brief Sets the duration of the interruption pulse to interrupt generator 2.
+   * 
+   * @param duration Interruption pulse duration in periods of data rate.
+   */
   void setAccelIntGenerator2Duration(int8_t duration);
 
+  /**
+   * @brief Gets the values on the interrupt generator 2 status register.
+   * 
+   * The status information can be extracted by the doing an and operation
+   * between the status and a mask. If the result is greater than 0, then the
+   * flag is set. Example:
+   * 
+   * // Checking if detected acceleration vector has components in positive Z axis.
+   * Nanoshield imu;
+   * 
+   * [...]
+   * 
+   * int igstatus = imu.getAccelIntGenerator1Status();
+   * if((igstatus & LSM303D_ZONE_ZH) > 0) {
+   *   Serial.println("Movement on positive Z axis!");
+   * }
+   * 
+   * The available flags to checks are:
+   * - LSM303D_INT_GENERATED: An interruption or more has occurred. This bits
+   *     clears automatically after it is read.
+   * - LSM303D_ZONE_ZH: Acceleration on positive Z axis detected.
+   * - LSM303D_ZONE_ZL: Acceleration on negative Z axis detected.
+   * - LSM303D_ZONE_YH: Acceleration on positive Y axis detected.
+   * - LSM303D_ZONE_YL: Acceleration on negative Y axis detected.
+   * - LSM303D_ZONE_XH: Acceleration on positive X axis detected.
+   * - LSM303D_ZONE_XL: Acceleration on negative X axis detected.
+   * 
+   * @return The value on interrut generator 2 status register.
+   */
   int8_t getAccelIntGenerator2Status();
 
   /**
