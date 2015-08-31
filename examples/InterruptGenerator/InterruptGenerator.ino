@@ -37,6 +37,9 @@ void setup() {
 
   // Define a threshold to all specified zones:
   imu.setAccelIntGenerator1Threshold(0.6);
+
+  // Turn magnetometer off to save energy.
+  imu.setMagnetometerPowerDown();
   
   imu.begin();
 
@@ -57,7 +60,7 @@ void loop() {
 
   if(movDetected) {
     // Check the interrupt generator status to find what happened.
-    int intStatus = imu.getAccelIntGenerator1Status();
+    int intStatus = imu.getAccelIntGenerator1Source();
 
     // Check if movement in Z positive axis.
     if((intStatus & LSM303D_ZONE_ZH) != 0) {

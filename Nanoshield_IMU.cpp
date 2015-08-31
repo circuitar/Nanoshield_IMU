@@ -38,7 +38,7 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   igDur1 = 0; 
   igCfg2 = 0; 
   igThs2 = 0; 
-  igDur2 = 0; 
+  igDur2 = 0;
 }
 
 void Nanoshield_IMU::begin() {
@@ -429,7 +429,7 @@ void Nanoshield_IMU::setAccelIntGenerator1Duration(int8_t duration) {
   writeIfHasBegun(LSM303D_IG_DUR1, igDur1);
 }
 
-int8_t Nanoshield_IMU::getAccelIntGenerator1Status() {
+int8_t Nanoshield_IMU::getAccelIntGenerator1Source() {
   return readFromLSM303DRegister(LSM303D_IG_SRC1);
 }
 
@@ -464,7 +464,7 @@ void Nanoshield_IMU::setAccelIntGenerator2Duration(int8_t duration) {
   writeIfHasBegun(LSM303D_IG_DUR2, igDur2);
 }
 
-int8_t Nanoshield_IMU::getAccelIntGenerator2Status() {
+int8_t Nanoshield_IMU::getAccelIntGenerator2Source() {
   return readFromLSM303DRegister(LSM303D_IG_SRC2);
 }
 
