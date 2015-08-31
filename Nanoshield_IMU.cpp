@@ -60,12 +60,14 @@ void Nanoshield_IMU::begin() {
     writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
   }
 
+  writeToLSM303DRegister(LSM303D_IG_CFG1, 0);
+
   writeToLSM303DRegister(LSM303D_IG_CFG1, igCfg1);
-  writeToLSM303DRegister(LSM303D_IG_CFG1, igThs1);
-  writeToLSM303DRegister(LSM303D_IG_CFG1, igDur1);
-  writeToLSM303DRegister(LSM303D_IG_CFG1, igCfg2);
-  writeToLSM303DRegister(LSM303D_IG_CFG1, igThs2);
-  writeToLSM303DRegister(LSM303D_IG_CFG1, igDur2);
+  writeToLSM303DRegister(LSM303D_IG_THS1, igThs1);
+  writeToLSM303DRegister(LSM303D_IG_DUR1, igDur1);
+  writeToLSM303DRegister(LSM303D_IG_CFG2, igCfg2);
+  writeToLSM303DRegister(LSM303D_IG_THS2, igThs2);
+  writeToLSM303DRegister(LSM303D_IG_DUR2, igDur2);
 
   hasBegun = true;
 }
@@ -242,7 +244,7 @@ bool Nanoshield_IMU::selfTest(float diff[]) {
          && zdiff >= -1700);
 }
 
-void setAccelAntialiasFilter(int8_t bandwidth) {
+void Nanoshield_IMU::setAccelAntialiasFilter(int8_t bandwidth) {
   regCtrl2 &= ~LSM303D_ABW_MASK;
   regCtrl2 |= bandwidth;
 
@@ -387,39 +389,8 @@ void Nanoshield_IMU::disableAccelBuffer() {
   writeIfHasBegun(LSM303D_CTRL0, regCtrl0);
 }
 
-void setAccelIntGenerator1Mode(int8_t mode) {
-  igCfg1 &= ~LSM303D_INTMODE_MASK
-  igCfg1 |= mode & LSM303D_INTMODE_MASK;
-
-  writeIfHasBegun(LSM303D_IG_CFG1, igCfg1);
-}
-
-void addToAccelIntGenerator1Zone(int8_t zone) {
-  igCfg1 |= zone & LSM303D_ZONE_MASK;
-
-  writeIfHasBegun(LSM303D_IG_CFG1, igCfg1);
-}
-
-void removeFromAccelIntGenerator1Zone(int8_t zone) {
-  igCfg1 &= ~(zone & LSM303D_ZONE_MASK);
-
-  writeIfHasBegun(LSM303D_IG_CFG1, igCfg1);
-}
-
-void setAccelIntGenerator1Threshold(int8_t threshold) {
-  igThs1 = (threshold * INT16_T_TOP / accelScale) & 0x7F;
-
-  writeIfHasBegun(LSM303D_IG_THS1, igThs1);
-}
-
-void setAccelIntGenerator1Duration(int8_t duration) {
-  igDur1 = duration & 0x7F;
-
-  writeIfHasBegun(LSM303D_IG_DUR1, igDur1);
-}
-
-int8_t getAccelIntGenerator1Status() {
-  return readFromLSM303DRegister(LSM303D_IG_SRC1);
+int Nanoshield_IMU::getBufferCount() {
+  return readFromLSM303DRegister(LSM303D_FIFO_SRC) & LSM303D_FSS_MASK;
 }
 
 void Nanoshield_IMU::resetAccelBuffer() {
@@ -429,8 +400,74 @@ void Nanoshield_IMU::resetAccelBuffer() {
   writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
 }
 
-int Nanoshield_IMU::getBufferCount() {
-  return readFromLSM303DRegister(LSM303D_FIFO_SRC) & LSM303D_FSS_MASK;
+void Nanoshield_IMU::setAccelIntGenerator1Mode(int8_t mode) {
+  igCfg1 &= ~LSM303D_INTMODE_MASK;
+  igCfg1 |= mode & LSM303D_INTMODE_MASK;
+
+  writeIfHasBegun(LSM303D_IG_CFG1, igCfg1);
+}
+
+void Nanoshield_IMU::addToAccelIntGenerator1Zone(int8_t zone) {
+  igCfg1 |= zone & LSM303D_ZONE_MASK;
+
+  writeIfHasBegun(LSM303D_IG_CFG1, igCfg1);
+}
+
+void Nanoshield_IMU::removeFromAccelIntGenerator1Zone(int8_t zone) {
+  igCfg1 &= ~(zone & LSM303D_ZONE_MASK);
+
+  writeIfHasBegun(LSM303D_IG_CFG1, igCfg1);
+}
+
+void Nanoshield_IMU::setAccelIntGenerator1Threshold(float threshold) {
+  igThs1 = (int8_t) (threshold * INT16_T_TOP / accelScale) & 0x7F;
+
+  writeIfHasBegun(LSM303D_IG_THS1, igThs1);
+}
+
+void Nanoshield_IMU::setAccelIntGenerator1Duration(int8_t duration) {
+  igDur1 = duration & 0x7F;
+
+  writeIfHasBegun(LSM303D_IG_DUR1, igDur1);
+}
+
+int8_t Nanoshield_IMU::getAccelIntGenerator1Status() {
+  return readFromLSM303DRegister(LSM303D_IG_SRC1);
+}
+
+void Nanoshield_IMU::setAccelIntGenerator2Mode(int8_t mode) {
+  igCfg2 &= ~LSM303D_INTMODE_MASK;
+  igCfg2 |= mode & LSM303D_INTMODE_MASK;
+
+  writeIfHasBegun(LSM303D_IG_CFG2, igCfg2);
+}
+
+void Nanoshield_IMU::addToAccelIntGenerator2Zone(int8_t zone) {
+  igCfg2 |= zone & LSM303D_ZONE_MASK;
+
+  writeIfHasBegun(LSM303D_IG_CFG2, igCfg2);
+}
+
+void Nanoshield_IMU::removeFromAccelIntGenerator2Zone(int8_t zone) {
+  igCfg2 &= ~(zone & LSM303D_ZONE_MASK);
+
+  writeIfHasBegun(LSM303D_IG_CFG2, igCfg2);
+}
+
+void Nanoshield_IMU::setAccelIntGenerator2Threshold(float threshold) {
+  igThs2 = (int8_t) (threshold * INT16_T_TOP / accelScale) & 0x7F;
+
+  writeIfHasBegun(LSM303D_IG_THS2, igThs2);
+}
+
+void Nanoshield_IMU::setAccelIntGenerator2Duration(int8_t duration) {
+  igDur2 = duration & 0x7F;
+
+  writeIfHasBegun(LSM303D_IG_DUR2, igDur2);
+}
+
+int8_t Nanoshield_IMU::getAccelIntGenerator2Status() {
+  return readFromLSM303DRegister(LSM303D_IG_SRC2);
 }
 
 void Nanoshield_IMU::writeToLSM303DRegister(int8_t reg, int8_t value) {

@@ -10,7 +10,7 @@
 #ifndef NANOSHIELD_IMU_H
 #define NANOSHIELD_IMU_H
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <Wire.h>
 
 // I2C Addresses
@@ -216,18 +216,18 @@
 #define LSM303D_FSS_MASK        (0x1F)
 
 // LSM303D_IG_CFG1/LSM303D_IG_CFG2 Values
-#define LSM303D_INTMODE_MASK    (0xC0)
-#define LSM303D_INTMODE_OR      (0x00)  /// Triggers interruption on or combination.
-#define LSM303D_INTMODE_MOVEMENT(0x40)  /// Pulses interruption when moves to a known zone.
-#define LSM303D_INTMODE_AND     (0x80)  /// Triggers interruption on and combination.
-#define LSM303D_INTMODE_POSITION(0xC0)  /// Keeps interruption signal while inside a known zone.
-#define LSM303D_ZONE_MASK       (0x3F)
-#define LSM303D_ZONE_ZH         (0x20)  /// Enable interrupt on high Z event.
-#define LSM303D_ZONE_ZL         (0x10)  /// Enable interrupt on low Z event.
-#define LSM303D_ZONE_YH         (0x08)  /// Enable interrupt on high Y event.
-#define LSM303D_ZONE_YL         (0x04)  /// Enable interrupt on low Y event.
-#define LSM303D_ZONE_XH         (0x02)  /// Enable interrupt on high X event.
-#define LSM303D_ZONE_XL         (0x01)  /// Enable interrupt on low X event.
+#define LSM303D_INTMODE_MASK      (0xC0)
+#define LSM303D_INTMODE_OR        (0x00)  /// Triggers interruption on or combination.
+#define LSM303D_INTMODE_MOVEMENT  (0x40)  /// Pulses interruption when moves to a known zone.
+#define LSM303D_INTMODE_AND       (0x80)  /// Triggers interruption on and combination.
+#define LSM303D_INTMODE_POSITION  (0xC0)  /// Keeps interruption signal while inside a known zone.
+#define LSM303D_ZONE_MASK         (0x3F)
+#define LSM303D_ZONE_ZH           (0x20)  /// Enable interrupt on high Z event.
+#define LSM303D_ZONE_ZL           (0x10)  /// Enable interrupt on low Z event.
+#define LSM303D_ZONE_YH           (0x08)  /// Enable interrupt on high Y event.
+#define LSM303D_ZONE_YL           (0x04)  /// Enable interrupt on low Y event.
+#define LSM303D_ZONE_XH           (0x02)  /// Enable interrupt on high X event.
+#define LSM303D_ZONE_XL           (0x01)  /// Enable interrupt on low X event.
 
 
 class Nanoshield_IMU {
@@ -599,7 +599,7 @@ public:
 
   void removeFromAccelIntGenerator1Zone(int8_t zone);
 
-  void setAccelIntGenerator1Threshold(int8_t threshold);
+  void setAccelIntGenerator1Threshold(float threshold);
 
   void setAccelIntGenerator1Duration(int8_t duration);
 
@@ -611,7 +611,7 @@ public:
 
   void removeFromAccelIntGenerator2Zone(int8_t zone);
 
-  void setAccelIntGenerator2Threshold(int8_t threshold);
+  void setAccelIntGenerator2Threshold(float threshold);
 
   void setAccelIntGenerator2Duration(int8_t duration);
 

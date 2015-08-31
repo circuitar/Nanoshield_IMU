@@ -1,34 +1,57 @@
 Nanoshield_IMU	KEYWORD1
 
+begin	KEYWORD2
+
 setAccelerometerPowerDown	KEYWORD2
 setAccelerometerDataRate	KEYWORD2
+
 enableAccelXAxis	KEYWORD2
 disableAccelXAxis	KEYWORD2
 enableAccelYAxis	KEYWORD2
 disableAccelYAxis	KEYWORD2
 enableAccelZAxis	KEYWORD2
 disableAccelZAxis	KEYWORD2
+
 setAccelerometerFullScale	KEYWORD2
 selfTest	KEYWORD2
 setAccelAntialiasFilter	KEYWORD2
 accelHasNewData	KEYWORD2
-begin	KEYWORD2
+
 readAccelX	KEYWORD2
 readAccelY	KEYWORD2
 readAccelZ	KEYWORD2
+
 setMagnetometerPowerDown	KEYWORD2
 setMagnetometerDataRate	KEYWORD2
 setMagnetometerFullScale	KEYWORD2
 magnetHasNewData	KEYWORD2
+
 readMagnetX	KEYWORD2
 readMagnetY	KEYWORD2
 readMagnetZ	KEYWORD2
+
 setInterrupt1Source	KEYWORD2
 setInterrupt2Source	KEYWORD2
+
 enableAccelBuffer	KEYWORD2
 disableAccelBuffer	KEYWORD2
 resetAccelBuffer	KEYWORD2
 getBufferCount	KEYWORD2
+
+setAccelIntGenerator1Mode	KEYWORD2
+addToAccelIntGenerator1Zone	KEYWORD2
+removeFromAccelIntGenerator1Zone	KEYWORD2
+setAccelIntGenerator1Threshold	KEYWORD2
+setAccelIntGenerator1Duration	KEYWORD2
+getAccelIntGenerator1Status	KEYWORD2
+
+setAccelIntGenerator2Mode	KEYWORD2
+addToAccelIntGenerator2Zone	KEYWORD2
+removeFromAccelIntGenerator2Zone	KEYWORD2
+setAccelIntGenerator2Threshold	KEYWORD2
+setAccelIntGenerator2Duration	KEYWORD2
+getAccelIntGenerator2Status	KEYWORD2
+
 writeToLSM303DRegister	KEYWORD2
 readFromLSM303DRegister	KEYWORD2
 accelAddress	KEYWORD2
@@ -217,3 +240,16 @@ LSM303D_FTH_STATUS	LITERAL1
 LSM303D_OVRN_STATUS	LITERAL1
 LSM303D_EMPTY_STATUS	LITERAL1
 LSM303D_FSS_MASK	LITERAL1
+
+LSM303D_INTMODE_MASK	LITERAL1
+LSM303D_INTMODE_OR	LITERAL1
+LSM303D_INTMODE_MOVEMENT	LITERAL1
+LSM303D_INTMODE_AND	LITERAL1
+LSM303D_INTMODE_POSITION	LITERAL1
+LSM303D_ZONE_MASK	LITERAL1
+LSM303D_ZONE_ZH	LITERAL1
+LSM303D_ZONE_ZL	LITERAL1
+LSM303D_ZONE_YH	LITERAL1
+LSM303D_ZONE_YL	LITERAL1
+LSM303D_ZONE_XH	LITERAL1
+LSM303D_ZONE_XL	LITERAL1
