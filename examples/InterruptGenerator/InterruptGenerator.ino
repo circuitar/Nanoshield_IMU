@@ -1,3 +1,10 @@
+/**
+ * @file InterruptGenerator.ino
+ * Example of accelerometer interruptio generator usage.
+ * 
+ * Copyright (c) 2015 Circuitar
+ * This software is released under the MIT license. See the attached LICENSE file for details.
+ */
 #include <Wire.h>
 #include <Nanoshield_IMU.h>
 #include <PinChangeInterrupt.h>
@@ -38,25 +45,30 @@ void setup() {
 void loop() {
   bool movDetected = false;
 
+  // Read interruption flag atomically to avoid concurrency.
   ATOMIC_BLOCK(ATOMIC_FORCEON) {
     movDetected = movementDetected;
   }
 
   if(movDetected) {
+    // Check the interrupt generator status to find what happened.
     int intStatus = imu.getAccelIntGenerator1Status();
 
+    // Check if movement in Z positive axis.
     if((intStatus & LSM303D_ZONE_ZH) != 0) {
       Serial.print("Movement on Z: ");
       Serial.print(imu.readAccelZ());
       Serial.println("g");
     }
 
+    // Check if movement in Y positive or negative axes.
     if((intStatus & (LSM303D_ZONE_YH | LSM303D_ZONE_YL)) != 0) {
       Serial.print("Movement on Y: ");
       Serial.print(imu.readAccelY());
       Serial.println("g");
     }
 
+    // Check if movement in X positive or negative axes.
     if((intStatus & (LSM303D_ZONE_XH | LSM303D_ZONE_XL)) != 0) {
       Serial.print("Movement on X: ");
       Serial.print(imu.readAccelX());
@@ -65,6 +77,7 @@ void loop() {
 
     Serial.println();
 
+    // Atomically reset interruption flag.
     ATOMIC_BLOCK(ATOMIC_FORCEON) {
       movementDetected = false;
     }
