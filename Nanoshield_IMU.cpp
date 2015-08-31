@@ -60,8 +60,6 @@ void Nanoshield_IMU::begin() {
     writeToLSM303DRegister(LSM303D_FIFO_CTRL, fifoCtrl);
   }
 
-  writeToLSM303DRegister(LSM303D_IG_CFG1, 0);
-
   writeToLSM303DRegister(LSM303D_IG_CFG1, igCfg1);
   writeToLSM303DRegister(LSM303D_IG_THS1, igThs1);
   writeToLSM303DRegister(LSM303D_IG_DUR1, igDur1);
