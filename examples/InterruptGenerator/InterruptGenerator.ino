@@ -7,6 +7,11 @@
  */
 #include <Wire.h>
 #include <Nanoshield_IMU.h>
+/*
+ * To install the PinChangeInterrupt library download the library as zip from
+ * this link <https://github.com/NicoHood/PinChangeInterrupt>. After it, in
+ * Arduino IDE, select Sketch > Include library > Add .ZIP library.
+ */
 #include <PinChangeInterrupt.h>
 #include <util/atomic.h>
 
