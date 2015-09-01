@@ -16,6 +16,8 @@ void setup() {
 }
 
 void loop() {
+  Serial.println("----------------\n");
+
   float a = imu.readAccelX();
   Serial.print("AccelX: ");
   Serial.print(a);
@@ -29,7 +31,7 @@ void loop() {
   a = imu.readAccelZ();
   Serial.print("AccelZ: ");
   Serial.print(a);
-  Serial.println("g");
+  Serial.println("g\n");
 
   a = imu.readMagnetX();
   Serial.print("MagnetX: ");
@@ -46,5 +48,19 @@ void loop() {
   Serial.print(a);
   Serial.println("gauss\n");
 
+  a = imu.readGyroX();
+  Serial.print("GyroX: ");
+  Serial.print(a);
+  Serial.println("dps");
+
+  a = imu.readGyroY();
+  Serial.print("GyroY: ");
+  Serial.print(a);
+  Serial.println("dps");
+
+  a = imu.readGyroZ();
+  Serial.print("GyroZ: ");
+  Serial.print(a);
+  Serial.println("dps\n");
   delay(500);
 }

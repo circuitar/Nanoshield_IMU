@@ -52,8 +52,12 @@ setAccelIntGenerator2Threshold	KEYWORD2
 setAccelIntGenerator2Duration	KEYWORD2
 getAccelIntGenerator2Status	KEYWORD2
 
-writeToLSM303DRegister	KEYWORD2
-readFromLSM303DRegister	KEYWORD2
+readGyroX	KEYWORD2
+readGyroY	KEYWORD2
+readGyroZ	KEYWORD2
+
+writeToRegister	KEYWORD2
+readFromRegister	KEYWORD2
 accelAddress	KEYWORD2
 
 LSM303D_ACCEL_ADDRESS	LITERAL1

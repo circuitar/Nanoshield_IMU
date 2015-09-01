@@ -15,6 +15,7 @@
 
 // I2C Addresses
 #define LSM303D_ADDRESS         (0x1C)
+#define L3GD20H_ADDRESS         (0x6A)
 #define LSM303D_I2C_0           (0x02)
 #define LSM303D_I2C_1           (0x01)
 
@@ -230,7 +231,7 @@
 #define LSM303D_ZONE_XL           (0x01)  /// Enable interrupt on low X event.
 
 // LSM303D_IG_SRC1/LSM303D_IG_SRC2 Values
-#define LSM303D_INT_ACTIVE   (0x40)  /// Notify that an IG interruption occurred. Reading the LSM303D_IG_SRC1/LSM303D_IG_SRC2 will clear the respective bit.
+#define LSM303D_INT_ACTIVE    (0x40)  /// Notify that an IG interruption occurred. Reading the LSM303D_IG_SRC1/LSM303D_IG_SRC2 will clear the respective bit.
 /*
  * To check the axes the zone flags can be used:
  * LSM303D_ZONE_MASK
@@ -241,6 +242,101 @@
  * LSM303D_ZONE_XH
  * LSM303D_ZONE_XL
  */
+
+#define L3GD20H_CTRL1         (0x20)
+#define L3GD20H_CTRL2         (0x21)
+#define L3GD20H_CTRL3         (0x22)
+#define L3GD20H_CTRL4         (0x23)
+#define L3GD20H_CTRL5         (0x24)
+#define L3GD20H_REFERENCE     (0x25)
+#define L3GD20H_OUT_TEMP      (0x26)
+#define L3GD20H_STATUS        (0x27)
+#define L3GD20H_OUT_X_L       (0x28)
+#define L3GD20H_OUT_X_H       (0x29)
+#define L3GD20H_OUT_Y_L       (0x2A)
+#define L3GD20H_OUT_Y_H       (0x2B)
+#define L3GD20H_OUT_Z_L       (0x2C)
+#define L3GD20H_OUT_Z_H       (0x2D)
+#define L3GD20H_FIFO_CTRL     (0x2E)
+#define L3GD20H_FIFO_SRC      (0x2F)
+#define L3GD20H_IG_CFG        (0x30)
+#define L3GD20H_IG_SRC        (0x31)
+#define L3GD20H_IG_THS_XH     (0x32)
+#define L3GD20H_IG_THS_XL     (0x33)
+#define L3GD20H_IG_THS_YH     (0x34)
+#define L3GD20H_IG_THS_YL     (0x35)
+#define L3GD20H_IG_THS_ZH     (0x36)
+#define L3GD20H_IG_THS_ZL     (0x37)
+#define L3GD20H_IG_DURATION   (0x38)
+#define L3GD20H_LOW_ODR       (0x39)
+
+// L3GD20H_CTRL1 Values
+#define L3GD20H_DRBW_12_5     (0x100)
+#define L3GD20H_DRBW_25       (0x140)
+#define L3GD20H_DRBW_50_16_6  (0x180)
+#define L3GD20H_DRBW_100_12_5 (0x00)
+#define L3GD20H_DRBW_100_25   (0x10)
+#define L3GD20H_DRBW_200_12_5 (0x40)
+#define L3GD20H_DRBW_200_70   (0x70)
+#define L3GD20H_DRBW_400_20   (0x80)
+#define L3GD20H_DRBW_400_25   (0x90)
+#define L3GD20H_DRBW_400_50   (0xA0)
+#define L3GD20H_DRBW_400_110  (0xB0)
+#define L3GD20H_DRBW_800_30   (0xC0)
+#define L3GD20H_DRBW_800_35   (0xE0)
+#define L3GD20H_DRBW_800_100  (0xF0)
+#define L3GD20H_POWER_UP      (0x08)
+#define L3GD20H_Z_ENABLE      (0x04)
+#define L3GD20H_Y_ENABLE      (0x02)
+#define L3GD20H_X_ENABLE      (0x01)
+
+// L3GD20H_CTRL2 Values
+#define L3GD20H_EXTREN        (0x80)
+#define L3GD20H_LVLEN         (0x40)
+#define L3GD20H_HPM_NORMAL    (0x00)
+#define L3GD20H_HPM_REFERENCE (0x10)
+#define L3GD20H_HPM_AUTORESET (0x30)
+#define L3GD20H_HPM_CUTOFF_0  (0x00)
+#define L3GD20H_HPM_CUTOFF_1  (0x01)
+#define L3GD20H_CUTOFF_2      (0x02)
+#define L3GD20H_CUTOFF_3      (0x03)
+#define L3GD20H_CUTOFF_4      (0x04)
+#define L3GD20H_CUTOFF_5      (0x05)
+#define L3GD20H_CUTOFF_6      (0x06)
+#define L3GD20H_CUTOFF_7      (0x07)
+#define L3GD20H_CUTOFF_8      (0x08)
+#define L3GD20H_CUTOFF_9      (0x09)
+
+// L3GD20H_CTRL3 Values
+#define L3GD20H_INT1_IG       (0x80)
+#define L3GD20H_INT1_BOOT     (0x40)
+#define L3GD20H_INT_HIGH_LOW  (0x20)
+#define L3GD20H_INT_PP_OP     (0x10)
+#define L3GD20H_INT2_DRDY     (0x08)
+#define L3GD20H_INT2_FTH      (0x04)
+#define L3GD20H_INT2_OVR      (0x02)
+#define L3GD20H_INT2_EMPTY    (0x01)
+
+// L3GD20H_CTRL4 Values
+#define L3GD20H_BDU           (0x80)
+#define L3GD20H_BLE           (0x40)
+#define L3GD20H_FS_MASK       (0x30)
+#define L3GD20H_FS_245        (0x00)
+#define L3GD20H_FS_500        (0x10)
+#define L3GD20H_FS_2000       (0x20)
+#define L3GD20H_LVL_LATCHED   (0x08)
+#define L3GD20H_ST_MASK       (0x06)
+#define L3GD20H_ST_NORMAL     (0x00)
+#define L3GD20H_ST_0          (0x02)
+#define L3GD20H_ST_1          (0x06)
+
+// L3GD20H_CTRL5 Values
+#define L3GD20H_BOOT          (0x80)
+#define L3GD20H_FIFO_EN       (0x40)
+#define L3GD20H_STOP_ON_FTH   (0x20)
+#define L3GD20H_HPEN          (0x10)
+
+// 
 
 class Nanoshield_IMU {
 public:
@@ -802,21 +898,27 @@ public:
    */
   int8_t getAccelIntGenerator2Source();
 
+  float readGyroX();
+  float readGyroY();
+  float readGyroZ();
+
+  //TODO documentation
   /**
    * @brief Writes a byte to any accelerometer register.
    * 
    * @param reg Register address.
    * @param value Value to write.
    */
-  void writeToLSM303DRegister(int8_t reg, int8_t value);
+  void writeToRegister(int8_t addr, int8_t reg, int8_t value);
 
+  //TODO documentation
   /**
    * @brief Reads 16bits from any accelerometer register.
    * 
    * @param reg Register to read.
    * @return 16bits value read.
    */
-  int16_t readFromLSM303DRegister(int8_t reg);
+  int8_t readFromRegister(int8_t addr, int8_t reg);
 
   /**
    * @brief Checks the status of the last I2C communication with the Nanoshield.
@@ -827,6 +929,7 @@ public:
 
 protected:
   int8_t lsm303dAddress;
+  int8_t l3gd20hAddress;
 
   int8_t regCtrl0;
   int8_t regCtrl1;
@@ -842,12 +945,18 @@ protected:
   int8_t igThs2;
   int8_t igDur2;
 
+  int8_t gyroCtrl1;
+  int8_t gyroCtrl3;
+  int8_t gyroCtrl4;
+  int8_t gyroCtrl5;
+
   int i2cError;
   int8_t accelScale;
   int8_t magnetScale;
+  int8_t gyroScale;
   bool hasBegun;
 
-  void writeIfHasBegun(int8_t reg, int8_t value);
+  void writeIfHasBegun(int8_t addr, int8_t reg, int8_t value);
 };
 
 
