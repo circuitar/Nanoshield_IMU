@@ -485,6 +485,35 @@ int8_t Nanoshield_IMU::getAccelIntGenerator2Source() {
   return readFromRegister(lsm303dAddress, LSM303D_IG_SRC2);
 }
 
+void Nanoshield_IMU::setGyroscopeFullScale(int8_t scale) {
+  switch(scale) {
+    case L3GD20H_FS_245:
+      gyroScale = 245;
+      break;
+    case L3GD20H_FS_500:
+      gyroScale = 500;
+      break;
+    case L3GD20H_FS_2000:
+      gyroScale = 2000;
+      break;
+    default:
+      return;
+  }
+
+  gyroCtrl4 &= ~L3GD20H_FS_MASK;
+  gyroCtrl4 |= scale;
+
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL4, gyroCtrl4);
+}
+
+void Nanoshield_IMU::setGyroscopeDataRate(int16_t drate) {
+  gyroCtrl1 &= ~L3GD20H_DRBW_MASK;
+  gyroCtrl1 |= drate & L3GD20H_DRBW_MASK;
+
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL1, gyroCtrl1);
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_LOW_ODR, drate >> 8 & 0x01);
+}
+
 float Nanoshield_IMU::readGyroX() {
   register int16_t xGyro = readFromRegister(l3gd20hAddress, L3GD20H_OUT_X_H) << 8;
   xGyro |= readFromRegister(l3gd20hAddress, L3GD20H_OUT_X_L);

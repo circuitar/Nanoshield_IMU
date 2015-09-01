@@ -271,6 +271,7 @@
 #define L3GD20H_LOW_ODR       (0x39)
 
 // L3GD20H_CTRL1 Values
+#define L3GD20H_DRBW_MASK     (0xC0)
 #define L3GD20H_DRBW_12_5     (0x100)
 #define L3GD20H_DRBW_25       (0x140)
 #define L3GD20H_DRBW_50_16_6  (0x180)
@@ -898,23 +899,54 @@ public:
    */
   int8_t getAccelIntGenerator2Source();
 
+  /**
+   * @brief Sets the gyroscope scale range.
+   * 
+   * Possible values:
+   * - L3GD20H_FS_245: +/- 245dps (8.75 mdps/digit of sensity)
+   * - L3GD20H_FS_500: +/- 500dps (17.5 mdps/digit of sensity)
+   * - L3GD20H_FS_2000: +/- 2000dps (70 mdps/digit of sensity)
+   * 
+   * @param scale The scale to adjust the measure.
+   */
+  void setGyroscopeFullScale(int8_t scale);
+
+  void setGyroscopeDataRate(int16_t drate);
+
+  /**
+   * @brief Gets the last angular speed measured around X axis.
+   * 
+   * @return The angular speed in degrees/second.
+   */
   float readGyroX();
+
+  /**
+   * @brief Gets the last angular speed measured around Y axis.
+   * 
+   * @return The angular speed in degrees/second.
+   */
   float readGyroY();
+
+  /**
+   * @brief Gets the last angular speed measured around Z axis.
+   * 
+   * @return The angular speed in degrees/second.
+   */
   float readGyroZ();
 
-  //TODO documentation
   /**
    * @brief Writes a byte to any accelerometer register.
    * 
+   * @param addr IC I2C address. Use lsm303dAddress or l3gd20hAddress.
    * @param reg Register address.
    * @param value Value to write.
    */
   void writeToRegister(int8_t addr, int8_t reg, int8_t value);
 
-  //TODO documentation
   /**
    * @brief Reads 16bits from any accelerometer register.
    * 
+   * @param addr IC I2C address. Use lsm303dAddress or l3gd20hAddress.
    * @param reg Register to read.
    * @return 16bits value read.
    */
@@ -953,7 +985,7 @@ protected:
   int i2cError;
   int8_t accelScale;
   int8_t magnetScale;
-  int8_t gyroScale;
+  int16_t gyroScale;
   bool hasBegun;
 
   void writeIfHasBegun(int8_t addr, int8_t reg, int8_t value);
