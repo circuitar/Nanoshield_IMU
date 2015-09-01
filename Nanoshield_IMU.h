@@ -638,6 +638,8 @@ public:
    */
   void setInterrupt2Source(int8_t src);
 
+  void setGyroInterruptSource(int8_t src);
+
   /**
    * @brief Enables the accelerometer buffer.
    * 

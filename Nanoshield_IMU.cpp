@@ -385,6 +385,18 @@ void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
   }
 }
 
+void Nanoshield_IMU::setGyroInterruptSource(int8_t src) {
+  // gyroCtrl3 &= 0x0F;
+  // gyroCtrl3 |= src;
+
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL3, src);
+  switch(src) {
+    case L3GD20H_INT2_DRDY:
+      readGyroX();
+      break;
+  }
+}
+
 void Nanoshield_IMU::enableAccelBuffer(int8_t mode, int8_t threshold) {
   if(threshold < 31) {
     regCtrl0 |= LSM303D_FTH_EN;
