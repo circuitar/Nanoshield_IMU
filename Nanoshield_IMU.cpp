@@ -28,6 +28,8 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
                | LSM303D_AXEN;      // Accelerometer X axis enabled.
   regCtrl2 = 0 | LSM303D_ABW_773    // Accelerometer anti-alias filter bandwidth 773Hz.
                | LSM303D_AFS_2G;    // Accelerometer full-scale +/- 2g.
+  regCtrl3 = 0;
+  regCtrl4 = 0;
   regCtrl5 = 0 | LSM303D_MODR_100;  // Magnetic data rate 100Hz.
   regCtrl6 = 0 | LSM303D_MFS_2GAUSS;    // Magnetic full-scale +/- 2gauss.
   regCtrl7 = 0 | LSM303D_MD_CONTINUOUS; // Magnetometer in continuous mode.
@@ -62,6 +64,14 @@ void Nanoshield_IMU::begin() {
   writeToRegister(lsm303dAddress, LSM303D_CTRL6, regCtrl6);
   writeToRegister(lsm303dAddress, LSM303D_CTRL7, regCtrl7);
 
+  // writeToRegister(lsm303dAddress, LSM303D_CTRL3, 0);
+  // writeToRegister(lsm303dAddress, LSM303D_CTRL4, 0);
+
+  // if(regCtrl4 != 0 || regCtrl3 != 0) {
+  //   writeToRegister(lsm303dAddress, LSM303D_CTRL3, regCtrl3);
+  //   writeToRegister(lsm303dAddress, LSM303D_CTRL4, regCtrl4);
+  // }
+
   // Not initializing CTRL0 and FIFO_CTRL with 0 results in some problems with FIFO.
   writeToRegister(lsm303dAddress, LSM303D_CTRL0, 0);
   writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, 0);
@@ -83,6 +93,16 @@ void Nanoshield_IMU::begin() {
   writeToRegister(l3gd20hAddress, L3GD20H_CTRL3, gyroCtrl3);
   writeToRegister(l3gd20hAddress, L3GD20H_CTRL4, gyroCtrl4);
   writeToRegister(l3gd20hAddress, L3GD20H_CTRL5, gyroCtrl5);
+
+  // readAccelX();
+  // readAccelY();
+  // readAccelZ();
+  // readMagnetX();
+  // readMagnetY();
+  // readMagnetZ();
+  // readGyroX();
+  // readGyroY();
+  // readGyroZ();
 
   hasBegun = true;
 }
@@ -268,7 +288,7 @@ void Nanoshield_IMU::setAccelAntialiasFilter(int8_t bandwidth) {
 
 bool Nanoshield_IMU::accelHasNewData() {
   register int8_t statusa = readFromRegister(lsm303dAddress, LSM303D_STATUS_A);
-  return statusa > 0;
+  return (statusa & 0x08) != 0;
 }
 
 float Nanoshield_IMU::readAccelX() {
@@ -332,7 +352,7 @@ void Nanoshield_IMU::setMagnetometerFullScale(int8_t scale) {
 
 bool Nanoshield_IMU::magnetHasNewData(){
   register int8_t statusm = readFromRegister(lsm303dAddress, LSM303D_STATUS_M);
-  return statusm > 0;
+  return statusm & 0x08 != 0;
 }
 
 void Nanoshield_IMU::setMagnetometerContinuousMode() {
@@ -368,7 +388,7 @@ float Nanoshield_IMU::readMagnetZ() {
 }
 
 void Nanoshield_IMU::setInterrupt1Source(int8_t src) {
-  writeToRegister(lsm303dAddress, LSM303D_CTRL3, src);
+  writeIfHasBegun(lsm303dAddress, LSM303D_CTRL3, src);
   switch(src) {
     case LSM303D_INT1_DRDY_A: 
       readAccelX();
@@ -377,7 +397,7 @@ void Nanoshield_IMU::setInterrupt1Source(int8_t src) {
 }
 
 void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
-  writeToRegister(lsm303dAddress, LSM303D_CTRL4, src);
+  writeIfHasBegun(lsm303dAddress, LSM303D_CTRL4, src);
   switch(src) {
     case LSM303D_INT2_DRDY_A: 
       readAccelX();
@@ -390,11 +410,11 @@ void Nanoshield_IMU::setGyroInterruptSource(int8_t src) {
   // gyroCtrl3 |= src;
 
   writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL3, src);
-  switch(src) {
-    case L3GD20H_INT2_DRDY:
-      readGyroX();
-      break;
-  }
+  // switch(src) {
+  //   case L3GD20H_INT2_DRDY:
+  //     readGyroX();
+  //     break;
+  // }
 }
 
 void Nanoshield_IMU::enableAccelBuffer(int8_t mode, int8_t threshold) {
@@ -524,6 +544,11 @@ void Nanoshield_IMU::setGyroscopeDataRate(int16_t drate) {
 
   writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL1, gyroCtrl1);
   writeIfHasBegun(l3gd20hAddress, L3GD20H_LOW_ODR, drate >> 8 & 0x01);
+}
+
+bool Nanoshield_IMU::gyroHasNewData() {
+  register int8_t statusg = readFromRegister(l3gd20hAddress, L3GD20H_STATUS);
+  return (statusg & 0x08) != 0;
 }
 
 float Nanoshield_IMU::readGyroX() {

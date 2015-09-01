@@ -18,49 +18,45 @@ void setup() {
 void loop() {
   Serial.println("----------------\n");
 
-  float a = imu.readAccelX();
-  Serial.print("AccelX: ");
-  Serial.print(a);
-  Serial.println("g");
+  if(imu.accelHasNewData()) {
+    Serial.print("AccelX: ");
+    Serial.print(imu.readAccelX());
+    Serial.println("g");
 
-  a = imu.readAccelY();
-  Serial.print("AccelY: ");
-  Serial.print(a);
-  Serial.println("g");
+    Serial.print("AccelY: ");
+    Serial.print(imu.readAccelY());
+    Serial.println("g");
 
-  a = imu.readAccelZ();
-  Serial.print("AccelZ: ");
-  Serial.print(a);
-  Serial.println("g\n");
+    Serial.print("AccelZ: ");
+    Serial.print(imu.readAccelZ());
+    Serial.println("g\n");
+  }
 
-  a = imu.readMagnetX();
-  Serial.print("MagnetX: ");
-  Serial.print(a);
-  Serial.println("gauss");
+  if(imu.magnetHasNewData()){
+      Serial.print("MagnetX: ");
+      Serial.print(imu.readMagnetX());
+      Serial.println("gauss");
+  
+      Serial.print("MagnetX: ");
+      Serial.print(imu.readMagnetY());
+      Serial.println("gauss");
+  
+      Serial.print("MagnetX: ");
+      Serial.print(imu.readMagnetZ());
+      Serial.println("gauss\n");
+  }
 
-  a = imu.readMagnetY();
-  Serial.print("MagnetX: ");
-  Serial.print(a);
-  Serial.println("gauss");
-
-  a = imu.readMagnetZ();
-  Serial.print("MagnetX: ");
-  Serial.print(a);
-  Serial.println("gauss\n");
-
-  a = imu.readGyroX();
-  Serial.print("GyroX: ");
-  Serial.print(a);
-  Serial.println("dps");
-
-  a = imu.readGyroY();
-  Serial.print("GyroY: ");
-  Serial.print(a);
-  Serial.println("dps");
-
-  a = imu.readGyroZ();
-  Serial.print("GyroZ: ");
-  Serial.print(a);
-  Serial.println("dps\n");
-  delay(500);
+  if(imu.gyroHasNewData()) {
+      Serial.print("GyroX: ");
+      Serial.print(imu.readGyroX());
+      Serial.println("dps");
+  
+      Serial.print("GyroY: ");
+      Serial.print(imu.readGyroY());
+      Serial.println("dps");
+  
+      Serial.print("GyroZ: ");
+      Serial.print(imu.readGyroZ());
+      Serial.println("dps\n");
+  }
 }

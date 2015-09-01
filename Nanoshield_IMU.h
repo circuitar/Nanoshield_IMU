@@ -337,7 +337,16 @@
 #define L3GD20H_STOP_ON_FTH   (0x20)
 #define L3GD20H_HPEN          (0x10)
 
-// 
+// LSM303D_FIFO_CTRL Values
+#define L3GD20H_FM_MASK         (0xE0)
+#define L3GD20H_FM_BYPASS       (0x00)
+#define L3GD20H_FM_FIFO         (0x20)
+#define L3GD20H_FM_STREAM       (0x40)
+#define L3GD20H_FM_STREAM2FIFO  (0x60)
+#define L3GD20H_FM_BYPASS2STRM  (0x80)
+#define L3GD20H_FM_DYNAMICSTRM  (0xC0)
+#define L3GD20H_FM_BYPASS2FIFO  (0xE0)
+#define L3GD20H_FTHS_MASK       (0x1F)
 
 class Nanoshield_IMU {
 public:
@@ -557,8 +566,10 @@ public:
    */
   bool magnetHasNewData();
 
+  // TODO documentation
   void setMagnetometerContinuousMode();
 
+  //TODO documentation
   void setMagnetometerSingleShot();
 
   /**
@@ -638,6 +649,13 @@ public:
    */
   void setInterrupt2Source(int8_t src);
 
+  /**
+   * @brief Sets the source for gyroscope interrupt.
+   * 
+   * TODO COMPLETE DOCUMENTATION.
+   * 
+   * @param src The source for gyroscope interruption.
+   */
   void setGyroInterruptSource(int8_t src);
 
   /**
@@ -913,7 +931,33 @@ public:
    */
   void setGyroscopeFullScale(int8_t scale);
 
+  /**
+   * @brief Sets the gyroscope data rate and anti-alias filter.
+   * 
+   * Possible values:
+   * - L3GD20H_DRBW_12_5: 12.5Hz data rate and no anti-alias filter.
+   * - L3GD20H_DRBW_25: 25Hz data rate and no anti-alias filter.
+   * - L3GD20H_DRBW_50_16_6: 50Hz data rate and 16.6Hz anti-alias filter.
+   * - L3GD20H_DRBW_100_12_5: 100Hz data rate and 12.5Hz anti-alias filter.
+   * - L3GD20H_DRBW_100_25: 100Hz data rate and 25Hz anti-alias filter.
+   * - L3GD20H_DRBW_200_12_5: 200Hz data rate and 12.5Hz anti-alias filter.
+   * - L3GD20H_DRBW_200_70: 200Hz data rate and 70Hz anti-alias filter.
+   * - L3GD20H_DRBW_400_20: 400Hz data rate and 20Hz anti-alias filter.
+   * - L3GD20H_DRBW_400_25: 400Hz data rate and 25Hz anti-alias filter.
+   * - L3GD20H_DRBW_400_50: 400Hz data rate and 50Hz anti-alias filter.
+   * - L3GD20H_DRBW_400_110: 400Hz data rate and 110Hz anti-alias filter.
+   * - L3GD20H_DRBW_800_30: 800Hz data rate and 30Hz anti-alias filter.
+   * - L3GD20H_DRBW_800_35: 800Hz data rate and 35Hz anti-alias filter.
+   * - L3GD20H_DRBW_800_100: 800Hz data rate and 100Hz anti-alias filter.
+   * 
+   * @param drate Sampling frequency with respective anti-alias filter.
+   */
   void setGyroscopeDataRate(int16_t drate);
+
+
+  void enableGyroBuffer();
+
+  bool gyroHasNewData();
 
   /**
    * @brief Gets the last angular speed measured around X axis.
@@ -961,13 +1005,15 @@ public:
    */
   int i2cStatus();
 
-protected:
   int8_t lsm303dAddress;
   int8_t l3gd20hAddress;
+protected:
 
   int8_t regCtrl0;
   int8_t regCtrl1;
   int8_t regCtrl2;
+  int8_t regCtrl3;
+  int8_t regCtrl4;
   int8_t regCtrl5;
   int8_t regCtrl6;
   int8_t regCtrl7;
