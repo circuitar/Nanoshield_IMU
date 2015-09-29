@@ -8,6 +8,7 @@
  * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 #include <Nanoshield_IMU.h>
+#include <Arduino.h>
 
 #define INT16_T_TOP (32767.0)
 
@@ -19,6 +20,14 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   accelScale = 2;
   magnetScale = 2;
   gyroScale = 245;
+
+  softIronX = 1.0;
+  softIronY = 1.0;
+  softIronZ = 1.0;
+
+  hardIronX = 0.0;
+  hardIronY = 0.0;
+  hardIronZ = 0.0;
 
   regCtrl0 = 0;
   regCtrl1 = 0 | LSM303D_AODR_1600  // Accelerometer data rate 1600Hz.
@@ -34,7 +43,7 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   regCtrl6 = 0 | LSM303D_MFS_2GAUSS;    // Magnetic full-scale +/- 2gauss.
   regCtrl7 = 0 | LSM303D_MD_CONTINUOUS; // Magnetometer in continuous mode.
 
-  fifoCtrl = 0;                     // FIFO disabled.
+  aFifoCtrl = 0;                     // FIFO disabled.
 
   // Interrupt generators disabled.
   igCfg1 = 0;
@@ -53,6 +62,8 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   gyroCtrl4 = 0 | L3GD20H_BDU           // Waits a read operation end before updates a output register.
                 | L3GD20H_FS_245;       // 245 degrees/second full scale.
   gyroCtrl5 = 0;
+
+  gFifoCtrl = 0;
 }
 
 void Nanoshield_IMU::begin() {
@@ -77,9 +88,9 @@ void Nanoshield_IMU::begin() {
   writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, 0);
 
   // Just rewrite CTRL0 and FIFO_CTRL if they are set to something
-  if(regCtrl0 != 0 || fifoCtrl != 0) {
+  if(regCtrl0 != 0 || aFifoCtrl != 0) {
     writeToRegister(lsm303dAddress, LSM303D_CTRL0, regCtrl0);
-    writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, fifoCtrl);
+    writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, aFifoCtrl);
   }
 
   writeToRegister(lsm303dAddress, LSM303D_IG_CFG1, igCfg1);
@@ -92,18 +103,15 @@ void Nanoshield_IMU::begin() {
   writeToRegister(l3gd20hAddress, L3GD20H_CTRL1, gyroCtrl1);
   writeToRegister(l3gd20hAddress, L3GD20H_CTRL3, gyroCtrl3);
   writeToRegister(l3gd20hAddress, L3GD20H_CTRL4, gyroCtrl4);
-  writeToRegister(l3gd20hAddress, L3GD20H_CTRL5, gyroCtrl5);
 
-  // readAccelX();
-  // readAccelY();
-  // readAccelZ();
-  // readMagnetX();
-  // readMagnetY();
-  // readMagnetZ();
-  // readGyroX();
-  // readGyroY();
-  // readGyroZ();
+  writeToRegister(l3gd20hAddress, L3GD20H_CTRL5, 0);
+  writeToRegister(l3gd20hAddress, L3GD20H_FIFO_CTRL, 0);
 
+  if(regCtrl0 != 0 || aFifoCtrl != 0) {
+    writeToRegister(l3gd20hAddress, L3GD20H_CTRL5, gyroCtrl5);
+    writeToRegister(l3gd20hAddress, L3GD20H_FIFO_CTRL, gFifoCtrl);
+  }
+  
   hasBegun = true;
 }
 
@@ -292,21 +300,33 @@ bool Nanoshield_IMU::accelHasNewData() {
 }
 
 float Nanoshield_IMU::readAccelX() {
-  register int16_t xAccel = readFromRegister(lsm303dAddress, LSM303D_OUT_X_H_A) << 8;
-  xAccel |= readFromRegister(lsm303dAddress, LSM303D_OUT_X_L_A);
+  register int16_t xAccel = accelRawX();
   return (float) xAccel * accelScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readAccelY() {
-  register int16_t yAccel = readFromRegister(lsm303dAddress, LSM303D_OUT_Y_H_A) << 8;
-  yAccel |= readFromRegister(lsm303dAddress, LSM303D_OUT_Y_L_A);
+  register int16_t yAccel = accelRawY();
   return (float) yAccel * accelScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readAccelZ() {
-  register int16_t zAccel = readFromRegister(lsm303dAddress, LSM303D_OUT_Z_H_A) << 8;
-  zAccel |= readFromRegister(lsm303dAddress, LSM303D_OUT_Z_L_A);
+  register int16_t zAccel = accelRawZ();
   return (float) zAccel * accelScale / INT16_T_TOP;
+}
+
+int16_t Nanoshield_IMU::accelRawX() {
+  return readFromRegister(lsm303dAddress, LSM303D_OUT_X_H_A) << 8
+    | readFromRegister(lsm303dAddress, LSM303D_OUT_X_L_A);
+}
+
+int16_t Nanoshield_IMU::accelRawY() {
+  return readFromRegister(lsm303dAddress, LSM303D_OUT_Y_H_A) << 8
+    | readFromRegister(lsm303dAddress, LSM303D_OUT_Y_L_A);
+}
+
+int16_t Nanoshield_IMU::accelRawZ() {
+  return readFromRegister(lsm303dAddress, LSM303D_OUT_Z_H_A) << 8
+    | readFromRegister(lsm303dAddress, LSM303D_OUT_Z_L_A);
 }
 
 void Nanoshield_IMU::setMagnetometerPowerDown() {
@@ -369,25 +389,79 @@ void Nanoshield_IMU::setMagnetometerSingleShot() {
   writeIfHasBegun(lsm303dAddress, LSM303D_CTRL7, regCtrl7);
 }
 
+void Nanoshield_IMU::setMagnetOffset(float x, float y, float z) {
+  hardIronX = x;
+  hardIronY = y;
+  hardIronZ = z;
+}
+
+void Nanoshield_IMU::setMagnetScale(float x, float y, float z) {
+  softIronX = x;
+  softIronY = y;
+  softIronZ = z;
+}
+
+float Nanoshield_IMU::heading() {
+  int psin, pcos, tsin, tcos;
+  float phi, theta, psi;
+  float bfx, bfy, bfz;
+
+  int16_t bpx = magnetRawX();
+  int16_t bpy = magnetRawY();
+  int16_t bpz = magnetRawZ();
+
+  int16_t gpx = accelRawX();
+  int16_t gpy = accelRawY();
+  int16_t gpz = accelRawZ();
+
+  phi = atan2(gpz, gpy);
+  Serial.println(phi);
+
+  psin = sin(phi);
+  pcos = cos(phi);
+
+  theta = atan2(gpy * psin + gpz * pcos, -1.0 * gpy);
+  Serial.println(theta);
+  tsin = sin(theta);
+  tcos = cos(theta);
+
+  register float y = bpx * tcos - bpy * tsin * psin - bpz * tsin * pcos;
+  register float x = bpz * psin - bpy * pcos;
+  psi = atan2(y, x);
+  Serial.println(psi);
+
+  return psi;
+}
+
 float Nanoshield_IMU::readMagnetX() {
-  register int16_t xMagnet = readFromRegister(lsm303dAddress, LSM303D_OUT_X_H_M) << 8;
-  xMagnet |= readFromRegister(lsm303dAddress, LSM303D_OUT_X_L_M);
-  return (float) xMagnet * magnetScale / INT16_T_TOP;
+  return (float) softIronX * magnetRawX() * magnetScale / INT16_T_TOP - hardIronX;
 }
 
 float Nanoshield_IMU::readMagnetY() {
-  register int16_t yMagnet = readFromRegister(lsm303dAddress, LSM303D_OUT_Y_H_M) << 8;
-  yMagnet |= readFromRegister(lsm303dAddress, LSM303D_OUT_Y_L_M);
-  return (float) yMagnet * magnetScale / INT16_T_TOP;
+  return (float) softIronY * magnetRawY() * magnetScale / INT16_T_TOP - hardIronY;
 }
 
 float Nanoshield_IMU::readMagnetZ() {
-  register int16_t zMagnet = readFromRegister(lsm303dAddress, LSM303D_OUT_Z_H_M) << 8;
-  zMagnet |= readFromRegister(lsm303dAddress, LSM303D_OUT_Z_L_M);
-  return (float) zMagnet * magnetScale / INT16_T_TOP;
+  return (float) softIronZ * magnetRawZ() * magnetScale / INT16_T_TOP - hardIronZ;
+}
+
+int16_t Nanoshield_IMU::magnetRawX() {
+  return readFromRegister(lsm303dAddress, LSM303D_OUT_X_H_M) << 8
+         | readFromRegister(lsm303dAddress, LSM303D_OUT_X_L_M);
+}
+
+int16_t Nanoshield_IMU::magnetRawY() {
+  return readFromRegister(lsm303dAddress, LSM303D_OUT_Y_H_M) << 8
+         | readFromRegister(lsm303dAddress, LSM303D_OUT_Y_L_M);
+}
+
+int16_t Nanoshield_IMU::magnetRawZ() {
+  return readFromRegister(lsm303dAddress, LSM303D_OUT_Z_H_M) << 8
+         | readFromRegister(lsm303dAddress, LSM303D_OUT_Z_L_M);
 }
 
 void Nanoshield_IMU::setInterrupt1Source(int8_t src) {
+  regCtrl3 = 0 | src;
   writeIfHasBegun(lsm303dAddress, LSM303D_CTRL3, src);
   switch(src) {
     case LSM303D_INT1_DRDY_A: 
@@ -396,7 +470,13 @@ void Nanoshield_IMU::setInterrupt1Source(int8_t src) {
   }
 }
 
+void Nanoshield_IMU::resetInterrupt1() {
+  writeToRegister(lsm303dAddress, LSM303D_CTRL3, 0);
+  writeToRegister(lsm303dAddress, LSM303D_CTRL3, regCtrl3);
+}
+
 void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
+  regCtrl4 = 0 | src;
   writeIfHasBegun(lsm303dAddress, LSM303D_CTRL4, src);
   switch(src) {
     case LSM303D_INT2_DRDY_A: 
@@ -405,29 +485,32 @@ void Nanoshield_IMU::setInterrupt2Source(int8_t src) {
   }
 }
 
-void Nanoshield_IMU::setGyroInterruptSource(int8_t src) {
-  // gyroCtrl3 &= 0x0F;
-  // gyroCtrl3 |= src;
+void Nanoshield_IMU::resetInterrupt2() {
+  writeToRegister(lsm303dAddress, LSM303D_CTRL4, 0);
+  writeToRegister(lsm303dAddress, LSM303D_CTRL4, regCtrl4);
+}
 
-  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL3, src);
-  // switch(src) {
-  //   case L3GD20H_INT2_DRDY:
-  //     readGyroX();
-  //     break;
-  // }
+void Nanoshield_IMU::setGyroInterruptSource(int8_t src) {
+  gyroCtrl3 = 0 | src;
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL3, gyroCtrl3);
+}
+
+void Nanoshield_IMU::resetGyroInterrupt() {
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL3, 0);
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL3, gyroCtrl3);
 }
 
 void Nanoshield_IMU::enableAccelBuffer(int8_t mode, int8_t threshold) {
   if(threshold < 31) {
     regCtrl0 |= LSM303D_FTH_EN;
-    fifoCtrl |= threshold & LSM303D_THRESHOLD_MASK;
+    aFifoCtrl |= threshold & LSM303D_THRESHOLD_MASK;
   }
 
   regCtrl0 |= LSM303D_FIFO_EN;
   writeIfHasBegun(lsm303dAddress, LSM303D_CTRL0, regCtrl0);
 
-  fifoCtrl |= mode & LSM303D_FIFO_MODE_MASK;
-  writeIfHasBegun(lsm303dAddress, LSM303D_FIFO_CTRL, fifoCtrl);
+  aFifoCtrl |= mode & LSM303D_FIFO_MODE_MASK;
+  writeIfHasBegun(lsm303dAddress, LSM303D_FIFO_CTRL, aFifoCtrl);
 }
 
 void Nanoshield_IMU::disableAccelBuffer() {
@@ -441,10 +524,10 @@ int Nanoshield_IMU::getBufferCount() {
 }
 
 void Nanoshield_IMU::resetAccelBuffer() {
-  writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, fifoCtrl 
+  writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, aFifoCtrl 
                                             & ~LSM303D_FIFO_MODE_MASK 
                                             | LSM303D_BYPASS);
-  writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, fifoCtrl);
+  writeToRegister(lsm303dAddress, LSM303D_FIFO_CTRL, aFifoCtrl);
 }
 
 void Nanoshield_IMU::setAccelIntGenerator1Mode(int8_t mode) {
@@ -544,6 +627,41 @@ void Nanoshield_IMU::setGyroscopeDataRate(int16_t drate) {
 
   writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL1, gyroCtrl1);
   writeIfHasBegun(l3gd20hAddress, L3GD20H_LOW_ODR, drate >> 8 & 0x01);
+}
+
+void Nanoshield_IMU::enableGyroBuffer(int8_t mode, int8_t threshold) {
+  if(threshold < 31) {
+    gyroCtrl5 |= L3GD20H_STOP_ON_FTH;
+    gFifoCtrl |= threshold & L3GD20H_FTHS_MASK;
+  }
+
+  gyroCtrl5 |= L3GD20H_FIFO_EN;
+  gFifoCtrl |= mode;
+
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL5, gyroCtrl5);
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_FIFO_CTRL, gFifoCtrl);
+}
+
+void Nanoshield_IMU::resetGyroBuffer() {
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_FIFO_CTRL, 0);
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_FIFO_CTRL, gFifoCtrl);
+}
+
+bool Nanoshield_IMU::isGyroBufferEmpty() {
+  return (readFromRegister(l3gd20hAddress, L3GD20H_FIFO_SRC) 
+          & L3GD20H_EMPTY) != 0;
+}
+
+int8_t Nanoshield_IMU::getGyroBufferCount() {
+  return readFromRegister(l3gd20hAddress, L3GD20H_FIFO_SRC) & L3GD20H_FSS_MASK;
+}
+
+void Nanoshield_IMU::disableGyroBuffer() {
+  gyroCtrl5 &= ~(L3GD20H_FIFO_EN | L3GD20H_STOP_ON_FTH);
+  gFifoCtrl = 0;
+
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_CTRL5, gyroCtrl5);
+  writeIfHasBegun(l3gd20hAddress, L3GD20H_FIFO_CTRL, gFifoCtrl);
 }
 
 bool Nanoshield_IMU::gyroHasNewData() {

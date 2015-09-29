@@ -12,6 +12,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <math.h>
 
 // I2C Addresses
 #define LSM303D_ADDRESS         (0x1C)
@@ -337,7 +338,7 @@
 #define L3GD20H_STOP_ON_FTH   (0x20)
 #define L3GD20H_HPEN          (0x10)
 
-// LSM303D_FIFO_CTRL Values
+// L3GD20H_FIFO_CTRL Values
 #define L3GD20H_FM_MASK         (0xE0)
 #define L3GD20H_FM_BYPASS       (0x00)
 #define L3GD20H_FM_FIFO         (0x20)
@@ -347,6 +348,12 @@
 #define L3GD20H_FM_DYNAMICSTRM  (0xC0)
 #define L3GD20H_FM_BYPASS2FIFO  (0xE0)
 #define L3GD20H_FTHS_MASK       (0x1F)
+
+// L3GD20H_FIFO_SRC Values
+#define L3GD20H_FTH             (0x80)
+#define L3GD20H_OVRN            (0x40)
+#define L3GD20H_EMPTY           (0x20)
+#define L3GD20H_FSS_MASK        (0x1F)
 
 class Nanoshield_IMU {
 public:
@@ -489,9 +496,9 @@ public:
   void setAccelAntialiasFilter(int8_t bandwidth);
 
   /**
-   * @brief LOOKS DANGEROUS
+   * @brief Checks for new accelerometer data.
    * 
-   * @return [description]
+   * @return True if a new value is available. False otherwise.
    */
   bool accelHasNewData();
 
@@ -515,6 +522,39 @@ public:
    * @return The acceleration in g unit.
    */
   float readAccelZ();
+
+  /**
+   * @brief Gets the raw value measured on X axis.
+   * 
+   * To use a measure in g unit, use readAccelX().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readAccelX()
+   */
+  int16_t accelRawX();
+
+  /**
+   * @brief Gets the raw value measured on Y axis.
+   * 
+   * To use a measure in g unit, use readAccelY().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readAccelY()
+   */
+  int16_t accelRawY();
+
+  /**
+   * @brief Gets the raw value measured on Z axis.
+   * 
+   * To use a measure in g unit, use readAccelZ().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readAccelZ()
+   */
+  int16_t accelRawZ();
 
   /**
    * @brief Turns off the magnetometer.
@@ -560,17 +600,59 @@ public:
   void setMagnetometerFullScale(int8_t scale);
 
   /**
-   * @brief LOOKS DANGEROUS Checks if there is new data to be read from magnetometer.
+   * @brief Checks for new magnetometer data.
    *
-   * @return True if there is new data. False otherwise.
+   * @return True if a new value is available. False otherwise.
    */
   bool magnetHasNewData();
 
-  // TODO documentation
+  /**
+   * @brief Sets magnetometer to get measures with a sample rate.
+   * 
+   * When in continuous mode, magnetometer emasures are automatically taken
+   * and saved. To get the last measure, use readMagnetX(), readMagnetY() and
+   * readMagnetZ().
+   * 
+   * To define a sample rate, use setMagnetometerDataRate().
+   * 
+   * @see setMagnetometerDataRate()
+   * @see readMagnetX()
+   * @see readMagnetY()
+   * @see readMagnetZ()
+   */
   void setMagnetometerContinuousMode();
 
-  //TODO documentation
+  /**
+   * @brief Sets magnetometer to operate in single shot mode.
+   * 
+   * When in single shot mode, magnetometer will just take a measure when
+   * requested. To request a measure use readMagnetX(), readMagnetY() and
+   * readMagnetZ().
+   * 
+   * @see readMagnetX()
+   * @see readMagnetY()
+   * @see readMagnetZ()
+   */
   void setMagnetometerSingleShot();
+
+  /**
+   * @brief Sets the hard iron offset correction.
+   * 
+   * Magnetized ferromagnetics near the magnetometer causes a bias in measures.
+   * Use a proper software to calculate the hard iron correction and set the
+   * calibration factors.
+   * 
+   * This library has an example, <a href=""
+   * 
+   * @param x [description]
+   * @param y [description]
+   * @param z [description]
+   */
+  void setMagnetOffset(float x, float y, float z);
+  void setMagnetScale(float x, float y, float z);
+
+
+  float heading();
 
   /**
    * @brief Gets the last magnetic field measured on X axis.
@@ -592,6 +674,10 @@ public:
    * @return The magnetic field in gauss unit.
    */
   float readMagnetZ();
+
+  int16_t magnetRawX();
+  int16_t magnetRawY();
+  int16_t magnetRawZ();
 
   /**
    * @brief Sets the source for interrupt 1 pin.
@@ -622,6 +708,13 @@ public:
   void setInterrupt1Source(int8_t src);
 
   /**
+   * @brief Resets the INT1 register.
+   * 
+   * Avoid that the interrupt signal stops after some triggers.
+   */
+  void resetInterrupt1();
+
+  /**
    * @brief Sets the source for interrupt 2 pin.
    * 
    * Possible values:
@@ -650,6 +743,13 @@ public:
   void setInterrupt2Source(int8_t src);
 
   /**
+   * @brief Resets the INT2 register.
+   * 
+   * Avoid that the interrupt signal stops after some triggers.
+   */
+  void resetInterrupt2();
+
+  /**
    * @brief Sets the source for gyroscope interrupt.
    * 
    * TODO COMPLETE DOCUMENTATION.
@@ -657,6 +757,13 @@ public:
    * @param src The source for gyroscope interruption.
    */
   void setGyroInterruptSource(int8_t src);
+
+  /**
+   * @brief Resets the gyroscope INT register.
+   * 
+   * Avoid that the interrupt signal stops after some triggers.
+   */
+  void resetGyroInterrupt();
 
   /**
    * @brief Enables the accelerometer buffer.
@@ -954,9 +1061,25 @@ public:
    */
   void setGyroscopeDataRate(int16_t drate);
 
+  // Not working!
+  void enableGyroBuffer(int8_t mode, int8_t threshold = 31);
 
-  void enableGyroBuffer();
+  // Not working!
+  void resetGyroBuffer();
 
+  // Not working!
+  void disableGyroBuffer();
+
+  // Not working!
+  bool isGyroBufferEmpty();
+
+  int8_t getGyroBufferCount();
+
+  /**
+   * @brief Checks for new gyroscope data.
+   *
+   * @return True if a new value is available. False otherwise.
+   */
   bool gyroHasNewData();
 
   /**
@@ -1017,7 +1140,7 @@ protected:
   int8_t regCtrl5;
   int8_t regCtrl6;
   int8_t regCtrl7;
-  int8_t fifoCtrl;
+  int8_t aFifoCtrl;
   int8_t igCfg1;
   int8_t igThs1;
   int8_t igDur1;
@@ -1029,11 +1152,18 @@ protected:
   int8_t gyroCtrl3;
   int8_t gyroCtrl4;
   int8_t gyroCtrl5;
+  int8_t gFifoCtrl;
 
   int i2cError;
   int8_t accelScale;
   int8_t magnetScale;
   int16_t gyroScale;
+  float softIronX;
+  float softIronY;
+  float softIronZ;
+  float hardIronX;
+  float hardIronY;
+  float hardIronZ;
   bool hasBegun;
 
   void writeIfHasBegun(int8_t addr, int8_t reg, int8_t value);

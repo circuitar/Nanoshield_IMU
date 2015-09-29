@@ -9,7 +9,6 @@
 Nanoshield_IMU imu;
 
 void setup() {
-  pinMode(13, OUTPUT);
   Serial.begin(9600);
   Serial.print("Accelerometer test.\n\n");
   imu.begin();
@@ -43,7 +42,11 @@ void loop() {
   
       Serial.print("MagnetX: ");
       Serial.print(imu.readMagnetZ());
-      Serial.println("gauss\n");
+      Serial.println("gauss");
+
+      Serial.println("Heading: ");
+      Serial.print(imu.heading());
+      Serial.println("rad\n");
   }
 
   if(imu.gyroHasNewData()) {
