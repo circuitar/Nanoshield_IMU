@@ -524,7 +524,7 @@ public:
   float readAccelZ();
 
   /**
-   * @brief Gets the raw value measured on X axis.
+   * @brief Gets the raw accelerometer measured on X axis.
    * 
    * To use a measure in g unit, use readAccelX().
    * 
@@ -535,7 +535,7 @@ public:
   int16_t accelRawX();
 
   /**
-   * @brief Gets the raw value measured on Y axis.
+   * @brief Gets the raw accelerometer measured on Y axis.
    * 
    * To use a measure in g unit, use readAccelY().
    * 
@@ -546,7 +546,7 @@ public:
   int16_t accelRawY();
 
   /**
-   * @brief Gets the raw value measured on Z axis.
+   * @brief Gets the raw accelerometer measured on Z axis.
    * 
    * To use a measure in g unit, use readAccelZ().
    * 
@@ -642,16 +642,41 @@ public:
    * Use a proper software to calculate the hard iron correction and set the
    * calibration factors.
    * 
-   * This library has an example, <a href=""
+   * This library has an example, <a href="https://github.com/circuitar/Nanoshield_IMU/blob/master/examples/mcalib/mcalib.ino"> mcalib </a>,
+   * that operates in pair with a chrome application to calibrate hard iron and
+   * soft iron interferences.
    * 
-   * @param x [description]
-   * @param y [description]
-   * @param z [description]
+   * @param x X axis hard iron offset.
+   * @param y Y axis hard iron offset.
+   * @param z Z axis hard iron offset.
+   * 
+   * @see setMagnetScale()
    */
   void setMagnetOffset(float x, float y, float z);
+
+  /**
+   * @brief Sets the soft iron scale correction.
+   * 
+   * Unmagnetized ferromagnetics near the magnetometer causes a deformation in
+   * measures. Use a proper software to calculate the soft iron correction and
+   * set the calibration factors.
+   * 
+   * This library has an example, <a href="https://github.com/circuitar/Nanoshield_IMU/blob/master/examples/mcalib/mcalib.ino"> mcalib </a>,
+   * that operates in pair with a chrome application to calibrate hard iron and
+   * soft iron interferences.
+   * 
+   * @param x X axis soft iron scale.
+   * @param y Y axis soft iron scale.
+   * @param z Z axis soft iron scale.
+   */
   void setMagnetScale(float x, float y, float z);
 
-
+  /**
+   * @brief Gets the angle between earth magnetic north and magnetometer X axis.
+   * 
+   * @return The angle in radians between earth magnetic north and magnetometer
+   * X axis.
+   */
   float heading();
 
   /**
@@ -675,8 +700,37 @@ public:
    */
   float readMagnetZ();
 
+  /**
+   * @brief Gets the raw magnetic field measured on X axis.
+   * 
+   * To use a measure in gauss unit, use readMagnetX().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readMagnetX()
+   */
   int16_t magnetRawX();
+
+  /**
+   * @brief Gets the raw magnetic field measured on Y axis.
+   * 
+   * To use a measure in gauss unit, use readMagnetY().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readMagnetY()
+   */
   int16_t magnetRawY();
+
+  /**
+   * @brief Gets the raw magnetic field measured on Z axis.
+   * 
+   * To use a measure in gauss unit, use readMagnetZ().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readMagnetZ()
+   */
   int16_t magnetRawZ();
 
   /**
