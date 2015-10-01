@@ -2,6 +2,9 @@
  * @brief ImuTest.ino
  * A simple test to print on serial the measures from accelerometer and
  * magnetometer.
+ * 
+ * Copyright (c) 2015 Circuitar
+ * This software is released under the MIT license. See the attached LICENSE file for details.
  */
 #include <Wire.h>
 #include <Nanoshield_IMU.h>

@@ -1,3 +1,11 @@
+/**
+ * @file FifoMode.ino
+ * Sends magnetometer values in JSON representation to serial. Used with mcalib
+ * chorme app to calculate magnetometer calibration parameters.
+ * 
+ * Copyright (c) 2015 Circuitar
+ * This software is released under the MIT license. See the attached LICENSE file for details.
+ */
 #include <Wire.h>
 #include <Nanoshield_IMU.h>
 
