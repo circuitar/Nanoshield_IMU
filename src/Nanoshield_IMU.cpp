@@ -670,23 +670,31 @@ bool Nanoshield_IMU::gyroHasNewData() {
 }
 
 float Nanoshield_IMU::readGyroX() {
-  register int16_t xGyro = readFromRegister(l3gd20hAddress, L3GD20H_OUT_X_H) << 8;
-  xGyro |= readFromRegister(l3gd20hAddress, L3GD20H_OUT_X_L);
-  return (float) xGyro * gyroScale / INT16_T_TOP;
+  return (float) gyroRawX() * gyroScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readGyroY() {
-  register int16_t xGyro = readFromRegister(l3gd20hAddress, L3GD20H_OUT_Y_H) << 8;
-  xGyro |= readFromRegister(l3gd20hAddress, L3GD20H_OUT_Y_L);
-  return (float) xGyro * gyroScale / INT16_T_TOP;
+  return (float) gyroRawY() * gyroScale / INT16_T_TOP;
 }
 
 float Nanoshield_IMU::readGyroZ() {
-  register int16_t xGyro = readFromRegister(l3gd20hAddress, L3GD20H_OUT_Z_H) << 8;
-  xGyro |= readFromRegister(l3gd20hAddress, L3GD20H_OUT_Z_L);
-  return (float) xGyro * gyroScale / INT16_T_TOP;
+  return (float) gyroRawZ() * gyroScale / INT16_T_TOP;
 }
 
+int16_t Nanoshield_IMU::gyroRawX() {
+  return readFromRegister(l3gd20hAddress, L3GD20H_OUT_X_H) << 8
+    | readFromRegister(l3gd20hAddress, L3GD20H_OUT_X_L);
+}
+
+int16_t Nanoshield_IMU::gyroRawY() {
+  return readFromRegister(l3gd20hAddress, L3GD20H_OUT_Y_H) << 8
+    | readFromRegister(l3gd20hAddress, L3GD20H_OUT_Y_L);
+}
+
+int16_t Nanoshield_IMU::gyroRawZ() {
+  return readFromRegister(l3gd20hAddress, L3GD20H_OUT_Z_H) << 8
+    | readFromRegister(l3gd20hAddress, L3GD20H_OUT_Z_L);
+}
 
 void Nanoshield_IMU::writeToRegister(int8_t addr, int8_t reg, int8_t value) {
   Wire.beginTransmission(addr);

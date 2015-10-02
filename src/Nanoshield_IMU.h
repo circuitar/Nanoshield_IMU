@@ -1157,6 +1157,10 @@ public:
    */
   float readGyroZ();
 
+  int16_t gyroRawX();
+  int16_t gyroRawY();
+  int16_t gyroRawZ();
+
   /**
    * @brief Writes a byte to any accelerometer register.
    * 
