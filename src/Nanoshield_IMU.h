@@ -1061,7 +1061,7 @@ public:
    * 
    * [...]
    * 
-   * int igsource = imu.getAccelIntGenerator1Source();
+   * int igsource = imu.getAccelIntGenerator2Source();
    * if((igsource & LSM303D_ZONE_ZH) > 0) {
    *   Serial.println("Movement on positive Z axis!");
    * }
@@ -1115,16 +1115,16 @@ public:
    */
   void setGyroscopeDataRate(int16_t drate);
 
-  // Not working!
+  // FIXME Not working!
   void enableGyroBuffer(int8_t mode, int8_t threshold = 31);
 
-  // Not working!
+  // FIXME Not working!
   void resetGyroBuffer();
 
-  // Not working!
+  // FIXME Not working!
   void disableGyroBuffer();
 
-  // Not working!
+  // FIXME Not working!
   bool isGyroBufferEmpty();
 
   int8_t getGyroBufferCount();
