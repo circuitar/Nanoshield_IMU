@@ -1157,8 +1157,37 @@ public:
    */
   float readGyroZ();
 
+  /**
+   * @brief Gets the raw angular speed measured around X axis.
+   * 
+   * To use a measure in degrees/second unit, use readGyroX().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readGyroX()
+   */
   int16_t gyroRawX();
+
+  /**
+   * @brief Gets the raw angular speed measured around Y axis.
+   * 
+   * To use a measure in degrees/second unit, use readGyroY().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readGyroY()
+   */
   int16_t gyroRawY();
+
+  /**
+   * @brief Gets the raw angular speed measured around Z axis.
+   * 
+   * To use a measure in degrees/second unit, use readGyroZ().
+   * 
+   * @return 16 bit integer measured from CI.
+   * 
+   * @see readGyroZ()
+   */
   int16_t gyroRawZ();
 
   /**
