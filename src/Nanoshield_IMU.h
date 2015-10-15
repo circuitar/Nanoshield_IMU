@@ -1200,11 +1200,21 @@ public:
   void writeToRegister(int8_t addr, int8_t reg, int8_t value);
 
   /**
-   * @brief Reads 16bits from any accelerometer register.
+   * @brief Reads 16 bits from any register.
+   * 
+   * @param addr IC I2C address. Use lsm303dAddress or l3gd20hAddress.
+   * @param regHigh MSB register to read.
+   * @param regLow LSB register to read.
+   * @return 16 bits value read.
+   */
+  int16_t read16bits(int8_t addr, int8_t regHigh, int8_t regLow);
+
+  /**
+   * @brief Reads 8 bits from any register.
    * 
    * @param addr IC I2C address. Use lsm303dAddress or l3gd20hAddress.
    * @param reg Register to read.
-   * @return 16bits value read.
+   * @return 8 bits value read.
    */
   int8_t readFromRegister(int8_t addr, int8_t reg);
 
