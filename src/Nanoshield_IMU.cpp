@@ -29,6 +29,14 @@ Nanoshield_IMU::Nanoshield_IMU(int addr) {
   hardIronY = 0.0;
   hardIronZ = 0.0;
 
+  accelScaleX = 1.0;
+  accelScaleY = 1.0;
+  accelScaleZ = 1.0;
+
+  accelBiasX = 0.0;
+  accelBiasY = 0.0;
+  accelBiasZ = 0.0;
+
   regCtrl0 = 0;
   regCtrl1 = 0 | LSM303D_AODR_1600  // Accelerometer data rate 1600Hz.
                | LSM303D_BDU        // Waits a read operation ends before updates a output register.
@@ -300,18 +308,18 @@ bool Nanoshield_IMU::accelHasNewData() {
 }
 
 float Nanoshield_IMU::readAccelX() {
-  register int16_t xAccel = accelRawX();
-  return (float) xAccel * accelScale / INT16_T_TOP;
+  float xAccel = (float) accelRawX() * accelScale / INT16_T_TOP;
+  return (float) xAccel * accelScaleX + accelBiasX;
 }
 
 float Nanoshield_IMU::readAccelY() {
-  register int16_t yAccel = accelRawY();
-  return (float) yAccel * accelScale / INT16_T_TOP;
+  float yAccel = (float) accelRawY() * accelScale / INT16_T_TOP;
+  return yAccel * accelOffsetY + accelBiasY;
 }
 
 float Nanoshield_IMU::readAccelZ() {
-  register int16_t zAccel = accelRawZ();
-  return (float) zAccel * accelScale / INT16_T_TOP;
+  float zAccel = (float) accelRawZ() * accelScale / INT16_T_TOP;
+  return zAccel * accelOffsetZ + accelBiasZ;
 }
 
 int16_t Nanoshield_IMU::accelRawX() {
@@ -324,6 +332,18 @@ int16_t Nanoshield_IMU::accelRawY() {
 
 int16_t Nanoshield_IMU::accelRawZ() {
   return read16bits(lsm303dAddress, LSM303D_OUT_Z_H_A, LSM303D_OUT_Z_L_A);
+}
+
+void Nanoshield_IMU::setAccelScale(float x, float y, float z) {
+  accelScaleX = x;
+  accelScaleY = y;
+  accelScaleZ = z;
+}
+
+void Nanoshield_IMU::setAccelOffset(float x, float y, float z) {
+  accelBiasX = x;
+  accelBiasY = y;
+  accelBiasZ = z;
 }
 
 void Nanoshield_IMU::setMagnetometerPowerDown() {

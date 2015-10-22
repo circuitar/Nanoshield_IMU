@@ -557,6 +557,28 @@ public:
   int16_t accelRawZ();
 
   /**
+   * @brief Sets accelerometer scale calibration parameters.
+   * 
+   * TODO Fill documentation with how to find scale parameters.
+   * 
+   * @param x X axis scale correction.
+   * @param y Y axis scale correction.
+   * @param z Z axis scale correction.
+   */
+  void setAccelScale(float x, float y, float z);
+
+  /**
+   * @brief Sets accelerometer offset calibration parameters.
+   * 
+   * TODO Fill documentation with how to find offset parameters.
+   * 
+   * @param x X axis offset correction.
+   * @param y Y axis offset correction.
+   * @param z Z axis offset correction.
+   */
+  void setAccelOffset(float x, float y, float z);
+
+  /**
    * @brief Turns off the magnetometer.
    * 
    * Note that the last magnetometer measure stays in the registers. In case
@@ -1255,12 +1277,21 @@ protected:
   int8_t accelScale;
   int8_t magnetScale;
   int16_t gyroScale;
+
   float softIronX;
   float softIronY;
   float softIronZ;
   float hardIronX;
   float hardIronY;
   float hardIronZ;
+
+  float accelScaleX;
+  float accelScaleY;
+  float accelScaleZ;
+  float accelBiasX;
+  float accelBiasY;
+  float accelBiasZ;
+
   bool hasBegun;
 
   void writeIfHasBegun(int8_t addr, int8_t reg, int8_t value);

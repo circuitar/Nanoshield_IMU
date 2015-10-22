@@ -25,6 +25,9 @@ accelRawX	KEYWORD2
 accelRawY	KEYWORD2
 accelRawZ	KEYWORD2
 
+setAccelScale	KEYWORD2
+setAccelOffset	KEYWORD2
+
 setMagnetometerPowerDown	KEYWORD2
 setMagnetometerDataRate	KEYWORD2
 setMagnetometerFullScale	KEYWORD2
