@@ -29,8 +29,8 @@ The following examples_ are provided:
 * InterruptGenerator_ Specify and bound custom movement interruptions.
 * mcalib_ Use with mcalib chrome app to find magnetometer calibration factors.
 
-.. _`IMU Nanoshield`: https://www.circuitar.com/nanoshields/modules/imu/
-.. _Circuitar: https://www.circuitar.com
+.. _`IMU Nanoshield`: https://www.circuitar.com.br/nanoshields/modulos/imu/
+.. _Circuitar: https://www.circuitar.com.br
 .. _examples: https://github.com/circuitar/Nanoshield_IMU/tree/master/examples
 .. _DataReadyInterruption: https://github.com/circuitar/Nanoshield_IMU/blob/master/examples/DataReadyInterruption/DataReadyInterruption.ino
 .. _FifoMode: https://github.com/circuitar/Nanoshield_IMU/blob/master/examples/FifoMode/FifoMode.ino
